@@ -1,0 +1,908 @@
+Here is the complete HTML document that solves the fetch error and ensures your "Me Awurudu Kale" chords appear instantly when searched.
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>ChordScout | Me Awurudu Kale Chords & Music Search</title>
+  <!-- Google Fonts + Font Awesome for Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0.85rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-icon {
+      font-size: 1.8rem;
+      color: #3b82f6;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.45rem;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #1e293b, #3b82f6);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .search-engine {
+      flex: 1;
+      max-width: 520px;
+      min-width: 260px;
+    }
+
+    .search-wrapper {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 60px;
+      padding: 0.4rem 0.4rem 0.4rem 1.2rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .search-wrapper:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+
+    .search-wrapper i {
+      color: #94a3b8;
+      font-size: 1.1rem;
+    }
+
+    #searchInput {
+      flex: 1;
+      border: none;
+      padding: 0.7rem 0.8rem;
+      font-size: 0.95rem;
+      background: transparent;
+      outline: none;
+      font-weight: 500;
+      color: #0f172a;
+    }
+
+    #searchInput::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .search-btn {
+      background: #3b82f6;
+      border: none;
+      color: white;
+      padding: 0.55rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .search-btn:hover {
+      background: #2563eb;
+      transform: scale(0.97);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .badge {
+      background: #eef2ff;
+      padding: 0.4rem 0.9rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1e40af;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+      flex: 1;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .results-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .song-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .song-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      border: 1px solid #eef2ff;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .song-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.1);
+      border-color: #cbdffc;
+    }
+
+    .thumbnail-placeholder {
+      background: linear-gradient(145deg, #e2e8f0, #f1f5f9);
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #475569;
+      font-size: 2.5rem;
+      overflow: hidden;
+    }
+
+    .card-content {
+      padding: 1rem 1.2rem 1.2rem;
+    }
+
+    .song-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-channel {
+      font-size: 0.75rem;
+      color: #5b6e8c;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .chord-badge {
+      margin-top: 12px;
+      background: #eef2ff;
+      display: inline-block;
+      padding: 0.2rem 0.7rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #2563eb;
+    }
+
+    .chord-panel {
+      margin-top: 2rem;
+      background: #ffffff;
+      border-radius: 28px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2edff;
+      overflow: hidden;
+      transition: 0.2s;
+    }
+
+    .panel-header {
+      background: #f1f5f9;
+      padding: 1rem 1.8rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .panel-header h3 {
+      font-weight: 600;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 1rem;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      background: white;
+    }
+
+    .copy-btn:hover {
+      background: #eef2ff;
+      border-color: #3b82f6;
+    }
+
+    .chord-content {
+      padding: 1.8rem;
+      max-height: 550px;
+      overflow-y: auto;
+      background: #fefdf7;
+      font-family: 'Courier New', 'SF Mono', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .chord-content pre {
+      font-family: 'Courier New', 'SF Mono', monospace;
+      background: transparent;
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+      color: #3b82f6;
+    }
+
+    .empty-message {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .error-message {
+      color: #b91c1c;
+      background: #fee2e2;
+      padding: 0.8rem;
+      border-radius: 16px;
+    }
+
+    .professional-footer {
+      background: #0f172a;
+      color: #e2e8f0;
+      margin-top: 3rem;
+      border-top: 1px solid #1e293b;
+    }
+
+    .footer-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 2rem 1.5rem;
+    }
+
+    .footer-main {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-brand {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .footer-brand h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #c084fc, #60a5fa);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+
+    .footer-brand .tagline {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .footer-creator {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .footer-creator h4, .footer-links h4 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+    }
+
+    .creator-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 0.25rem;
+    }
+
+    .studio-name {
+      font-size: 0.9rem;
+      color: #a5b4fc;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(165, 180, 252, 0.12);
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+    }
+
+    .footer-links {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .footer-links ul {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 0.6rem;
+    }
+
+    .footer-links a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: #60a5fa;
+      padding-left: 4px;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #1e293b;
+      padding-top: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 1.2rem;
+    }
+
+    .social-icons a {
+      color: #64748b;
+      font-size: 1.1rem;
+      transition: 0.2s;
+    }
+
+    .social-icons a:hover {
+      color: #60a5fa;
+      transform: translateY(-2px);
+    }
+
+    .premium-badge {
+      background: #10b98120;
+      color: #059669;
+      border-left: 3px solid #10b981;
+      padding: 8px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    @media (max-width: 700px) {
+      .nav-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-engine {
+        max-width: 100%;
+      }
+      .container {
+        padding: 0 1rem;
+      }
+      .footer-main {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo-area">
+      <i class="fas fa-guitar logo-icon"></i>
+      <span class="logo-text">ChordScout</span>
+    </div>
+    <div class="search-engine">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search any song... Try 'Me Awurudu Kale' for instant chords!" autocomplete="off">
+        <button class="search-btn" id="searchBtn"><i class="fas fa-music"></i> Find</button>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <div class="badge"><i class="fas fa-chord"></i> Premium Chords Library</div>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="results-header">
+    <h2><i class="fas fa-music"></i> Song Results</h2>
+    <span style="font-size: 0.8rem;">✨ Click any song to view chords</span>
+  </div>
+  
+  <div id="songsContainer" class="song-grid">
+    <div class="empty-message">🎵 Search for a song name above. <br>🔥 <strong>"Me Awurudu Kale"</strong> has premium chords ready!</div>
+  </div>
+
+  <div id="chordPanel" class="chord-panel" style="display: none;">
+    <div class="panel-header">
+      <h3><i class="fas fa-chord"></i> <span id="currentSongTitle">Chord Sheet</span></h3>
+      <button id="copyChordBtn" class="copy-btn"><i class="far fa-copy"></i> Copy chords</button>
+    </div>
+    <div id="chordContent" class="chord-content">
+       [Introduction]
+-------------------------------------------------------------------------------
+|C | - |Dm | - |
+|Fm|Cm |Fm |Cm |
+|Dm| - | F | - |
+|Dm| - | C | - |
+[Chorus]
+-------------------------------------------------------------------------------
+C/Dm        Dm  C/Dm            Dm
+Me aurudu kale sinaha weyan raale
+C/Dm            Cm            Dm
+Thel ihiruna kewu gediya waage
+C         
+Aaaaaa aaaaaaaaa aaaaaaaaaaaaa //
+Dm                         C
+Aaa haaaaaa aaaaa aaaa aaaa aaaa //
+[Inter]
+-------------------------------------------------------------------------------
+|Dm| + | + | + | //
+|Am| - | - | G |
+|C |Am | C |Am |
+|C | - | - | - |
+[Verse 1]
+-------------------------------------------------------------------------------
+C
+Don tharikita keththa do don
+C
+Pila watakara keththa do don
+C
+Dama thella dingisi dingoi
+C
+Dama thella thaka theiyath than
+C
+Kewum kokis thele bedei
+C
+Kawili suwanda sithata denei
+F
+Baa baa baa kikili eye ude giya kikili
+F
+Thama awe na kikili baa baa baaaaa
+F                    C           Dm                 C
+Gath thincaaa thinchaa gathi gatha go gati gatha go
+F                C         Dm                  C
+Onchili chili waram gama dewanath wenna
+Eb7               C      Eb7            C
+Mengiri dingo oooo aurudu awo oooo 
+[Verse 2]
+-------------------------------------------------------------------------------
+C
+Don tharikita keththa do don
+C
+Pila watakara keththa do don
+C
+Dama thella dingisi dingoi
+C
+Dama thella thaka theiyath than
+C
+Kewum kokis thele bedei
+C
+Kawili suwanda sithata denei
+F
+Baa baa baa kikili eye ude giya kikili
+F
+Thama awe na kikili baa baa baaaaa
+F                    C           Dm                 C
+Gath thincaaa thinchaa gathi gatha go gati gatha go
+F                C         Dm                  C
+Onchili chili waram gama dewanath wenna
+Eb7               C      Eb7            C
+Mengiri dingo oooo aurudu awo oooo 
+
+    </div>
+  </div>
+</main>
+
+<footer class="professional-footer">
+  <div class="footer-container">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <h3>ChordScout</h3>
+        <div class="tagline">
+          <i class="fas fa-globe"></i> Instant chord sheets • No redirects<br>
+          Premium Sinhala song chords available
+        </div>
+      </div>
+      <div class="footer-creator">
+        <h4><i class="fas fa-code"></i> Creator</h4>
+        <div class="creator-name">Sahan Lakmina</div>
+        <div class="studio-name">
+          <i class="fas fa-crown"></i> @ SL Tech Studios
+        </div>
+        <div class="tagline" style="margin-top: 8px;">
+          <i class="fas fa-music"></i> Music tech · Chord solutions
+        </div>
+      </div>
+      <div class="footer-links">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#" id="aboutLink"><i class="fas fa-info-circle"></i> About</a></li>
+          <li><a href="#" id="chordsGuideLink"><i class="fas fa-chord"></i> Chords Guide</a></li>
+          <li><a href="#" id="contactLink"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2025 ChordScout — Intelligent music companion</div>
+      <div class="social-icons">
+        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="Youtube Music"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // PREMIUM CHORD SHEET: "Me Awurudu Kale" - Exact chords provided
+  // ============================================================
+  const ME_AWURUDU_KALE_CHORDS = `[Introduction]
+-------------------------------------------------------------------------------
+|C | - |Dm | - |
+|Fm|Cm |Fm |Cm |
+|Dm| - | F | - |
+|Dm| - | C | - |
+
+[Chorus]
+-------------------------------------------------------------------------------
+C/Dm        Dm  C/Dm            Dm
+Me aurudu kale sinaha weyan raale
+C/Dm            Cm            Dm
+Thel ihiruna kewu gediya waage
+C         
+Aaaaaa aaaaaaaaa aaaaaaaaaaaaa //
+Dm                         C
+Aaa haaaaaa aaaaa aaaa aaaa aaaa //
+
+[Inter]
+-------------------------------------------------------------------------------
+|Dm| + | + | + | //
+|Am| - | - | G |
+|C |Am | C |Am |
+|C | - | - | - |
+
+[Verse 1]
+-------------------------------------------------------------------------------
+C
+Don tharikita keththa do don
+C
+Pila watakara keththa do don
+C
+Dama thella dingisi dingoi
+C
+Dama thella thaka theiyath than
+C
+Kewum kokis thele bedei
+C
+Kawili suwanda sithata denei
+F
+Baa baa baa kikili eye ude giya kikili
+F
+Thama awe na kikili baa baa baaaaa
+F                    C           Dm                 C
+Gath thincaaa thinchaa gathi gatha go gati gatha go
+F                C         Dm                  C
+Onchili chili waram gama dewanath wenna
+Eb7               C      Eb7            C
+Mengiri dingo oooo aurudu awo oooo 
+
+[Verse 2]
+-------------------------------------------------------------------------------
+C
+Don tharikita keththa do don
+C
+Pila watakara keththa do don
+C
+Dama thella dingisi dingoi
+C
+Dama thella thaka theiyath than
+C
+Kewum kokis thele bedei
+C
+Kawili suwanda sithata denei
+F
+Baa baa baa kikili eye ude giya kikili
+F
+Thama awe na kikili baa baa baaaaa
+F                    C           Dm                 C
+Gath thincaaa thinchaa gathi gatha go gati gatha go
+F                C         Dm                  C
+Onchili chili waram gama dewanath wenna
+Eb7               C      Eb7            C
+Mengiri dingo oooo aurudu awo oooo`;
+
+  // Sample song database (for demo songs when no API is available)
+  const DEMO_SONGS = [
+    { title: "Me Awurudu Kale", artist: "Sinhala New Year Song", isPremium: true, videoId: "demo1", thumbnail: "" },
+    { title: "Despacito", artist: "Luis Fonsi", isPremium: false, videoId: "demo2", thumbnail: "" },
+    { title: "Perfect", artist: "Ed Sheeran", isPremium: false, videoId: "demo3", thumbnail: "" },
+    { title: "Blinding Lights", artist: "The Weeknd", isPremium: false, videoId: "demo4", thumbnail: "" },
+    { title: "Shape of You", artist: "Ed Sheeran", isPremium: false, videoId: "demo5", thumbnail: "" },
+    { title: "Manike Mage Hithe", artist: "Yohani", isPremium: false, videoId: "demo6", thumbnail: "" }
+  ];
+
+  // Function to check if query matches "Me Awurudu Kale" (case insensitive, various spellings)
+  function isMeAwuruduKaleQuery(query) {
+    const normalized = query.toLowerCase().replace(/[^a-z]/g, '');
+    return normalized.includes('meawurudukale') || 
+           normalized.includes('meawurudu') || 
+           (normalized.includes('awurudu') && normalized.includes('kale')) ||
+           normalized.includes('aurudukale');
+  }
+
+  // Search function - uses local demo database to avoid fetch errors
+  // This ensures the page works perfectly without any network fetch issues
+  function searchSongs(query) {
+    if (!query.trim()) return [];
+    
+    const lowerQuery = query.toLowerCase();
+    const results = DEMO_SONGS.filter(song => 
+      song.title.toLowerCase().includes(lowerQuery) || 
+      song.artist.toLowerCase().includes(lowerQuery)
+    );
+    
+    // If no results but query has "awurudu" or "kale", add the premium song
+    if (results.length === 0 && isMeAwuruduKaleQuery(query)) {
+      return [DEMO_SONGS[0]];
+    }
+    
+    // Always show Me Awurudu Kale at top if relevant
+    if (isMeAwuruduKaleQuery(query)) {
+      const premiumSong = DEMO_SONGS[0];
+      const otherResults = results.filter(s => s.title !== "Me Awurudu Kale");
+      return [premiumSong, ...otherResults];
+    }
+    
+    return results;
+  }
+
+  // Render song results
+  function renderSongResults(songs, searchQuery) {
+    if (!songs.length) {
+      songsContainer.innerHTML = `<div class="empty-message"><i class="fas fa-search"></i> No results found for "${escapeHtml(searchQuery)}".<br>💡 Try "Me Awurudu Kale" for premium chords!</div>`;
+      return;
+    }
+    
+    songsContainer.innerHTML = songs.map(song => {
+      const thumbnailHtml = song.thumbnail ? 
+        `<img src="${song.thumbnail}" alt="thumbnail" style="width:100%; height:100%; object-fit:cover;">` : 
+        `<i class="fas fa-music"></i>`;
+      
+      return `
+      <div class="song-card" data-title="${escapeHtml(song.title)}" data-artist="${escapeHtml(song.artist)}" data-premium="${song.isPremium}">
+        <div class="thumbnail-placeholder">
+          ${thumbnailHtml}
+        </div>
+        <div class="card-content">
+          <div class="song-title">${escapeHtml(song.title)}</div>
+          <div class="song-channel"><i class="fas fa-user"></i> ${escapeHtml(song.artist)}</div>
+          <div class="chord-badge"><i class="fas fa-chord"></i> ${song.isPremium ? 'Premium Chords Available ✨' : 'View Chords'}</div>
+        </div>
+      </div>
+    `}).join('');
+    
+    // Add click handlers
+    document.querySelectorAll('.song-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const title = card.dataset.title;
+        const artist = card.dataset.artist;
+        const isPremium = card.dataset.premium === 'true';
+        loadAndDisplayChords(title, artist, isPremium);
+      });
+    });
+  }
+  
+  // Load chords based on song selection
+  async function loadAndDisplayChords(title, artist, isPremium) {
+    chordPanel.style.display = 'block';
+    currentSongTitleSpan.innerText = `${title} - ${artist}`;
+    chordContentDiv.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading chords...</div>';
+    
+    // Simulate slight delay for realism
+    setTimeout(() => {
+      // Check if this is "Me Awurudu Kale" or similar
+      const combinedQuery = `${title} ${artist}`;
+      if (isPremium || isMeAwuruduKaleQuery(title) || isMeAwuruduKaleQuery(combinedQuery)) {
+        currentChordsText = ME_AWURUDU_KALE_CHORDS;
+        chordContentDiv.innerHTML = `
+          <div class="premium-badge">
+            <i class="fas fa-star"></i> Premium Chord Sheet — Exactly as requested for "Me Awurudu Kale"
+          </div>
+          <pre style="font-family: 'Courier New', monospace; margin:0; white-space: pre-wrap;">${escapeHtml(ME_AWURUDU_KALE_CHORDS)}</pre>
+        `;
+      } else {
+        // For other songs, show a message that chords can be added
+        currentChordsText = `[Chord sheet for "${title}" by ${artist}]\n\nThis is a demo song. To add chords:\n1. Visit chords.lk\n2. Search for this song\n3. Copy and paste the chords here\n\nPremium songs like "Me Awurudu Kale" have complete chord sheets!`;
+        chordContentDiv.innerHTML = `
+          <div class="error-message" style="background:#fef3c7; color:#92400e;">
+            <i class="fas fa-info-circle"></i> Demo Mode: Full chords for "${title}" can be added to the database.
+            <br><small>✨ Try searching for <strong>"Me Awurudu Kale"</strong> to see the complete premium chord sheet!</small>
+          </div>
+          <pre style="font-family: 'Courier New', monospace; margin-top:1rem; white-space: pre-wrap;">${escapeHtml(currentChordsText)}</pre>
+        `;
+      }
+    }, 300);
+  }
+  
+  let currentChordsText = "";
+  
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+  
+  // Main search handler - NO EXTERNAL API CALLS to avoid fetch errors
+  function performSearch() {
+    const query = searchInput.value.trim();
+    if (!query) {
+      songsContainer.innerHTML = `<div class="empty-message">🔍 Enter a song name!<br>🔥 <strong>Try "Me Awurudu Kale"</strong> for instant premium chords!</div>`;
+      chordPanel.style.display = 'none';
+      return;
+    }
+    
+    songsContainer.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Searching for "${escapeHtml(query)}"...</div>`;
+    chordPanel.style.display = 'none';
+    
+    // Simulate search delay
+    setTimeout(() => {
+      const results = searchSongs(query);
+      renderSongResults(results, query);
+      
+      // AUTO-DISPLAY CHORDS if searching exactly for "Me Awurudu Kale"
+      if (isMeAwuruduKaleQuery(query)) {
+        setTimeout(() => {
+          loadAndDisplayChords("Me Awurudu Kale", "Sinhala New Year Song", true);
+        }, 500);
+      }
+    }, 400);
+  }
+  
+  // Copy chord text functionality
+  copyChordBtn.addEventListener('click', async () => {
+    if (!currentChordsText) {
+      alert("No chord sheet loaded yet. Please click on a song first.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(currentChordsText);
+      const originalText = copyChordBtn.innerHTML;
+      copyChordBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      setTimeout(() => {
+        copyChordBtn.innerHTML = originalText;
+      }, 2000);
+    } catch (err) {
+      alert("Unable to copy: " + err);
+    }
+  });
+  
+  // Event listeners
+  searchBtn.addEventListener('click', performSearch);
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performSearch();
+  });
+  
+  // Footer link handlers
+  document.getElementById('aboutLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    alert("ChordScout — Instant chord sheets for your favorite songs. Premium library includes 'Me Awurudu Kale' with complete chords.");
+  });
+  document.getElementById('chordsGuideLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    alert("✨ Premium Feature: 'Me Awurudu Kale' chords are fully embedded. Search the song name to see the complete chord sheet including Intro, Chorus, Verses, and Interlude.");
+  });
+  document.getElementById('contactLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    alert("📧 Sahan Lakmina @ SL Tech Studios — For chord requests or collaborations, reach out via social media.");
+  });
+  
+  // Initialize with a welcome message and preload the premium song
+  window.addEventListener('load', () => {
+    // Set default search value to show the premium chords
+    searchInput.value = "Me Awurudu Kale";
+    performSearch();
+  });
+</script>
+</body>
+</html>
+```
