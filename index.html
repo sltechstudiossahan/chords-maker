@@ -1,746 +1,1101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeriChat · next‑gen messenger</title>
-  <!-- Font & Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    body {
-      background: linear-gradient(145deg, #0f0f1a 0%, #1a1a2e 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-    }
-
-    /* main card – glassmorphism + vibrant accent */
-    .app-container {
-      max-width: 1300px;
-      width: 100%;
-      background: rgba(25, 25, 45, 0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 48px;
-      padding: 24px;
-      box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 215, 0, 0.15);
-      border: 1px solid rgba(255, 215, 0, 0.1);
-      transition: all 0.2s ease;
-    }
-
-    /* grid layout */
-    .messenger-grid {
-      display: grid;
-      grid-template-columns: 320px 1fr 280px;
-      gap: 20px;
-      min-height: 700px;
-    }
-
-    /* ---------- sidebar / contacts ---------- */
-    .sidebar {
-      background: rgba(10, 10, 20, 0.5);
-      border-radius: 32px;
-      padding: 20px 16px;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 215, 0, 0.08);
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .sidebar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-      color: #f5e7b0;
-    }
-
-    .sidebar-header h2 {
-      font-weight: 600;
-      font-size: 1.5rem;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #f9d976, #f39c12);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .profile-preview {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(255, 215, 0, 0.05);
-      padding: 8px 14px 8px 10px;
-      border-radius: 40px;
-      border: 1px solid rgba(255, 215, 0, 0.15);
-    }
-
-    .profile-preview i {
-      font-size: 1.2rem;
-      color: #f1c40f;
-    }
-
-    .profile-preview span {
-      color: #ddd;
-      font-size: 0.85rem;
-      font-weight: 400;
-    }
-
-    .contact-list {
-      flex: 1;
-      overflow-y: auto;
-      margin-top: 16px;
-      padding-right: 4px;
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 14px;
-      border-radius: 20px;
-      margin-bottom: 6px;
-      background: transparent;
-      transition: all 0.2s;
-      cursor: default;
-      color: #c8c8d4;
-      border: 1px solid transparent;
-    }
-
-    .contact-item:hover {
-      background: rgba(255, 215, 0, 0.06);
-      border-color: rgba(255, 215, 0, 0.15);
-      color: #fff;
-    }
-
-    .contact-item .avatar {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, #f1c40f, #e67e22);
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      color: #0f0f1a;
-      font-size: 1rem;
-    }
-
-    .contact-info {
-      flex: 1;
-    }
-
-    .contact-info .name {
-      font-weight: 500;
-    }
-
-    .contact-info .status {
-      font-size: 0.7rem;
-      opacity: 0.6;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .status .dot {
-      width: 6px;
-      height: 6px;
-      background: #2ecc71;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    /* ---------- chat area ---------- */
-    .chat-area {
-      background: rgba(0, 0, 0, 0.25);
-      border-radius: 36px;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid rgba(255, 215, 0, 0.05);
-      backdrop-filter: blur(4px);
-      overflow: hidden;
-    }
-
-    .chat-header {
-      padding: 18px 24px;
-      background: rgba(255, 215, 0, 0.02);
-      border-bottom: 1px solid rgba(255, 215, 0, 0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .chat-header .chat-user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #f0e6c5;
-    }
-
-    .chat-user i {
-      font-size: 1.6rem;
-      color: #f1c40f;
-    }
-
-    .chat-user .nic-badge {
-      background: rgba(241, 196, 15, 0.15);
-      padding: 4px 14px;
-      border-radius: 50px;
-      font-size: 0.65rem;
-      color: #f1c40f;
-      border: 1px solid rgba(241, 196, 15, 0.2);
-    }
-
-    .chat-messages {
-      flex: 1;
-      padding: 20px 24px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .message {
-      max-width: 80%;
-      padding: 12px 18px;
-      border-radius: 24px;
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(4px);
-      border: 1px solid rgba(255, 215, 0, 0.05);
-      color: #e0e0e0;
-      font-size: 0.95rem;
-      line-height: 1.4;
-      align-self: flex-start;
-    }
-
-    .message.sent {
-      align-self: flex-end;
-      background: rgba(241, 196, 15, 0.12);
-      border-color: rgba(241, 196, 15, 0.2);
-      color: #f5e7b0;
-    }
-
-    .message .msg-time {
-      font-size: 0.6rem;
-      opacity: 0.5;
-      margin-top: 4px;
-      text-align: right;
-    }
-
-    .poll-message {
-      background: rgba(46, 204, 113, 0.05);
-      border-left: 3px solid #f1c40f;
-      padding: 12px 16px;
-      border-radius: 16px;
-    }
-
-    .location-message {
-      background: rgba(52, 152, 219, 0.05);
-      border-left: 3px solid #3498db;
-    }
-
-    .chat-footer {
-      padding: 16px 20px 20px;
-      background: rgba(0, 0, 0, 0.2);
-      border-top: 1px solid rgba(255, 215, 0, 0.05);
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .chat-footer input[type="text"] {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 215, 0, 0.1);
-      padding: 14px 18px;
-      border-radius: 60px;
-      color: #f0e6c5;
-      font-size: 0.95rem;
-      outline: none;
-      transition: 0.2s;
-    }
-
-    .chat-footer input:focus {
-      border-color: #f1c40f;
-      background: rgba(255, 215, 0, 0.02);
-    }
-
-    .chat-footer .action-btn {
-      background: rgba(255, 215, 0, 0.08);
-      border: 1px solid rgba(255, 215, 0, 0.1);
-      color: #f1c40f;
-      width: 48px;
-      height: 48px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .chat-footer .action-btn:hover {
-      background: rgba(241, 196, 15, 0.15);
-      border-color: #f1c40f;
-    }
-
-    /* ---------- right panel: NIC / profile ---------- */
-    .right-panel {
-      background: rgba(10, 10, 20, 0.4);
-      border-radius: 32px;
-      padding: 20px 16px;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 215, 0, 0.05);
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .panel-title {
-      color: #f5e7b0;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      opacity: 0.6;
-    }
-
-    .nic-verification {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 24px;
-      padding: 16px;
-      border: 1px solid rgba(255, 215, 0, 0.08);
-    }
-
-    .nic-verification .cam-placeholder {
-      background: #0f0f1a;
-      border-radius: 20px;
-      height: 120px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #7a7a8a;
-      border: 1px dashed rgba(255, 215, 0, 0.2);
-      margin-bottom: 12px;
-      transition: 0.2s;
-    }
-
-    .cam-placeholder i {
-      font-size: 2.2rem;
-      color: #f1c40f;
-      opacity: 0.7;
-    }
-
-    .cam-placeholder span {
-      margin-top: 6px;
-      font-size: 0.7rem;
-    }
-
-    .nic-data {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 16px;
-      padding: 12px;
-      font-size: 0.8rem;
-      color: #b8b8c8;
-    }
-
-    .nic-data .data-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 4px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    }
-
-    .data-row .label {
-      color: #8a8a9a;
-    }
-
-    .data-row .value {
-      color: #f1e6c5;
-      font-weight: 500;
-    }
-
-    .profile-maker {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 20px;
-      padding: 14px;
-      margin-top: 4px;
-    }
-
-    .profile-maker .input-group {
-      display: flex;
-      gap: 8px;
-      margin: 8px 0;
-    }
-
-    .profile-maker input {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 215, 0, 0.08);
-      padding: 10px 14px;
-      border-radius: 40px;
-      color: #ddd;
-      width: 100%;
-      font-size: 0.8rem;
-      outline: none;
-    }
-
-    .profile-maker input:focus {
-      border-color: #f1c40f;
-    }
-
-    .btn-gold {
-      background: linear-gradient(135deg, #f1c40f, #e67e22);
-      border: none;
-      color: #0f0f1a;
-      font-weight: 600;
-      padding: 10px 20px;
-      border-radius: 60px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: 0.15s;
-      letter-spacing: 0.3px;
-      border: 1px solid rgba(255, 215, 0, 0.3);
-    }
-
-    .btn-gold:hover {
-      transform: scale(0.96);
-      opacity: 0.9;
-    }
-
-    .btn-outline-gold {
-      background: transparent;
-      border: 1px solid rgba(241, 196, 15, 0.2);
-      color: #f1c40f;
-      padding: 8px 16px;
-      border-radius: 60px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn-outline-gold:hover {
-      background: rgba(241, 196, 15, 0.05);
-    }
-
-    .voice-row {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-
-    .mic-badge {
-      background: rgba(241, 196, 15, 0.05);
-      border-radius: 30px;
-      padding: 4px 12px;
-      font-size: 0.7rem;
-      color: #f1c40f;
-      border: 1px solid rgba(241, 196, 15, 0.1);
-    }
-
-    /* scroll style */
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #f1c40f40;
-      border-radius: 20px;
-    }
-
-    /* responsive */
-    @media (max-width: 1000px) {
-      .messenger-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-      .right-panel {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-      }
-    }
-    @media (max-width: 600px) {
-      .right-panel {
-        grid-template-columns: 1fr;
-      }
-      .app-container {
-        padding: 12px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ChatApp - Secure Messaging</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        body {
+            background: #0b141a;
+            color: #e9edef;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .hidden { display: none !important; }
+        .page {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #0b141a;
+        }
+        /* Registration Page */
+        #registerPage {
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(145deg, #0b141a 0%, #1a2a33 100%);
+            padding: 20px;
+        }
+        .register-box {
+            background: #1f2c33;
+            padding: 40px 32px;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+            border: 1px solid #2a3942;
+        }
+        .register-box h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        .register-box p.sub {
+            color: #8696a0;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+        .register-box input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            background: #2a3942;
+            border: 1px solid #3b4a54;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .register-box input:focus {
+            border-color: #00a884;
+            box-shadow: 0 0 0 3px rgba(0,168,132,0.2);
+        }
+        .register-box input::placeholder { color: #8696a0; }
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: #00a884;
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+        .btn-primary:hover { background: #00c49a; transform: scale(1.01); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .error-msg {
+            color: #ff5e5e;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        /* NIC Capture Page */
+        #nicPage {
+            justify-content: center;
+            align-items: center;
+            background: #0b141a;
+            padding: 20px;
+        }
+        .nic-container {
+            background: #1f2c33;
+            padding: 24px;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid #2a3942;
+        }
+        .nic-container h2 {
+            margin-bottom: 16px;
+            font-size: 22px;
+            font-weight: 500;
+        }
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1.6/1;
+            background: #0b141a;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #2a3942;
+        }
+        #videoPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #0b141a;
+        }
+        .capture-overlay {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+        }
+        .btn-capture {
+            padding: 12px 28px;
+            background: #00a884;
+            border: none;
+            border-radius: 40px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .btn-capture:hover { background: #00c49a; }
+        .btn-capture:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            padding: 12px 24px;
+            background: #2a3942;
+            border: none;
+            border-radius: 40px;
+            color: #fff;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: #3b4a54; }
+        .nic-status {
+            margin-top: 16px;
+            padding: 14px;
+            background: #2a3942;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #d1d7db;
+            text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #3b4a54;
+            border-top: 2px solid #00a884;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Chat Page */
+        #chatPage {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #0b141a;
+        }
+        .chat-header {
+            padding: 16px 20px;
+            background: #1f2c33;
+            border-bottom: 1px solid #2a3942;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .chat-header .brand {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header .brand span { color: #00a884; }
+        .chat-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .chat-header .user-info .name { font-weight: 500; font-size: 14px; }
+        .btn-logout {
+            background: #2a3942;
+            border: none;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-logout:hover { background: #3b4a54; }
+        .chat-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        /* Contacts Sidebar */
+        .contacts-sidebar {
+            width: 300px;
+            background: #1f2c33;
+            border-right: 1px solid #2a3942;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .contacts-sidebar .search-add {
+            padding: 12px 16px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid #2a3942;
+            flex-shrink: 0;
+        }
+        .contacts-sidebar .search-add input {
+            flex: 1;
+            padding: 10px 14px;
+            background: #2a3942;
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        .contacts-sidebar .search-add input::placeholder { color: #8696a0; }
+        .btn-add-contact {
+            padding: 8px 16px;
+            background: #00a884;
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .btn-add-contact:hover { background: #00c49a; }
+        .contacts-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: 0.15s;
+            border-bottom: 1px solid #1a2a33;
+            gap: 14px;
+        }
+        .contact-item:hover { background: #2a3942; }
+        .contact-item.active { background: #2a3942; }
+        .contact-item .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #00a884;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+            color: #fff;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+        .contact-item .info { flex: 1; min-width: 0; }
+        .contact-item .info .name { font-weight: 500; font-size: 15px; }
+        .contact-item .info .email { font-size: 12px; color: #8696a0; }
+        .contact-item .info .last-msg { font-size: 13px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .contact-item .time { font-size: 11px; color: #8696a0; flex-shrink: 0; }
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0b141a;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .msg {
+            max-width: 70%;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeUp 0.25s ease;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .msg.sent {
+            align-self: flex-end;
+            background: #005c4b;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .msg.received {
+            align-self: flex-start;
+            background: #1f2c33;
+            color: #e9edef;
+            border-bottom-left-radius: 4px;
+        }
+        .msg .sender { font-size: 11px; color: #8696a0; margin-bottom: 4px; display: block; }
+        .msg .time-stamp { font-size: 10px; color: #8696a0; margin-top: 4px; display: block; text-align: right; }
+        .chat-input-area {
+            padding: 12px 20px;
+            background: #1f2c33;
+            border-top: 1px solid #2a3942;
+            display: flex;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 18px;
+            background: #2a3942;
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+        .chat-input-area input::placeholder { color: #8696a0; }
+        .chat-input-area button {
+            padding: 10px 24px;
+            background: #00a884;
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chat-input-area button:hover { background: #00c49a; }
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8696a0;
+            font-size: 16px;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .empty-chat span { font-size: 40px; }
+        /* Add Contact Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+        .modal-box {
+            background: #1f2c33;
+            padding: 32px 28px;
+            border-radius: 32px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid #2a3942;
+        }
+        .modal-box h3 { margin-bottom: 12px; font-size: 22px; }
+        .modal-box input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background: #2a3942;
+            border: 1px solid #3b4a54;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+        .modal-box input:focus { border-color: #00a884; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+        .modal-actions button { flex: 1; padding: 12px; border-radius: 16px; border: none; font-weight: 600; cursor: pointer; }
+        .modal-actions .btn-confirm { background: #00a884; color: #fff; }
+        .modal-actions .btn-confirm:hover { background: #00c49a; }
+        .modal-actions .btn-cancel { background: #2a3942; color: #fff; }
+        .modal-actions .btn-cancel:hover { background: #3b4a54; }
+        /* Responsive */
+        @media (max-width: 640px) {
+            .contacts-sidebar { width: 100%; border-right: none; }
+            .chat-layout { flex-direction: column; }
+            .chat-area { height: 100%; }
+            .register-box { padding: 28px 20px; }
+            .nic-container { padding: 16px; }
+        }
+    </style>
 </head>
 <body>
-<div class="app-container">
-  <div class="messenger-grid">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h2><i class="fas fa-bolt" style="color: #f1c40f; margin-right: 8px;"></i>VeriChat</h2>
-        <div class="profile-preview">
-          <i class="fas fa-user-circle"></i>
-          <span>JohnD</span>
-        </div>
-      </div>
-      <div class="contact-list">
-        <div class="contact-item">
-          <div class="avatar">A</div>
-          <div class="contact-info"><div class="name">Alex Rivera</div><div class="status"><span class="dot"></span> verified · NIC</div></div>
-        </div>
-        <div class="contact-item">
-          <div class="avatar">S</div>
-          <div class="contact-info"><div class="name">Samira K.</div><div class="status"><span class="dot"></span> online</div></div>
-        </div>
-        <div class="contact-item">
-          <div class="avatar">M</div>
-          <div class="contact-info"><div class="name">Mika Chen</div><div class="status"><i class="fas fa-check-circle" style="color: #2ecc71; font-size: 0.6rem;"></i> NIC verified</div></div>
-        </div>
-        <div class="contact-item">
-          <div class="avatar">J</div>
-          <div class="contact-info"><div class="name">Jordan Lee</div><div class="status"><span class="dot"></span> 2 min ago</div></div>
-        </div>
-        <div class="contact-item" style="opacity:0.4;">
-          <div class="avatar">?</div>
-          <div class="contact-info"><div class="name">Unknown (no NIC)</div><div class="status"><i class="fas fa-exclamation-triangle" style="color: #e67e22;"></i> unverified</div></div>
-        </div>
-      </div>
-      <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,215,0,0.05);">
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button class="btn-outline-gold" style="flex:1;"><i class="fas fa-plus-circle"></i> New chat</button>
-          <button class="btn-outline-gold"><i class="fas fa-user-shield"></i> NIC</button>
-        </div>
-      </div>
+<!-- ===== REGISTER PAGE ===== -->
+<div id="registerPage" class="page">
+    <div class="register-box">
+        <h1>Welcome 👋</h1>
+        <p class="sub">Create your account to start messaging</p>
+        <input type="email" id="regEmail" placeholder="Email address" />
+        <input type="password" id="regPassword" placeholder="Password (min 6 chars)" />
+        <button class="btn-primary" id="registerBtn">Register</button>
+        <div id="regError" class="error-msg"></div>
     </div>
+</div>
 
-    <!-- CHAT -->
-    <div class="chat-area">
-      <div class="chat-header">
-        <div class="chat-user">
-          <i class="fas fa-user-circle"></i>
-          <span><strong>Alex Rivera</strong> <span class="nic-badge"><i class="fas fa-id-card"></i> NIC ✓</span></span>
+<!-- ===== NIC CAPTURE PAGE ===== -->
+<div id="nicPage" class="page hidden">
+    <div class="nic-container">
+        <h2>📇 Capture Your NIC</h2>
+        <div class="video-wrapper">
+            <video id="videoPreview" autoplay playsinline></video>
+            <div class="capture-overlay">
+                <button class="btn-capture" id="captureBtn">📸 Capture</button>
+                <button class="btn-secondary" id="retryCamBtn">🔄 Retry</button>
+            </div>
         </div>
-        <div>
-          <i class="fas fa-phone-alt" style="color: #f1c40f; margin-right: 16px; opacity:0.7;"></i>
-          <i class="fas fa-video" style="color: #f1c40f; opacity:0.7;"></i>
-        </div>
-      </div>
-      <div class="chat-messages">
-        <div class="message"><i class="fas fa-check-circle" style="color: #2ecc71; margin-right: 6px;"></i>NIC verified · John Doe (1990-01-01)</div>
-        <div class="message">Hey! just sent you a poll 📊</div>
-        <div class="message poll-message"><i class="fas fa-poll" style="color: #f1c40f;"></i> Poll: Best feature? · 1. Voice 2. NIC 3. Location</div>
-        <div class="message location-message"><i class="fas fa-map-pin" style="color: #3498db;"></i> Live location: 6.9271° N, 79.8612° E</div>
-        <div class="message sent">Verified NIC data saved (no image stored) ✅</div>
-        <div class="message sent"><i class="fas fa-microphone" style="color: #f1c40f;"></i> Voice note (Sinhala/English)</div>
-      </div>
-      <div class="chat-footer">
-        <input type="text" placeholder="Type message or use voice..." />
-        <div class="action-btn"><i class="fas fa-microphone"></i></div>
-        <div class="action-btn"><i class="fas fa-paperclip"></i></div>
-        <div class="action-btn"><i class="fas fa-poll"></i></div>
-        <div class="action-btn"><i class="fas fa-location-dot"></i></div>
-        <div class="action-btn" style="background: #f1c40f20; border-color:#f1c40f;"><i class="fas fa-paper-plane"></i></div>
-      </div>
+        <div class="nic-status" id="nicStatus">📷 Position your NIC in frame</div>
     </div>
+</div>
 
-    <!-- RIGHT PANEL: NIC + PROFILE -->
-    <div class="right-panel">
-      <div>
-        <div class="panel-title"><i class="fas fa-id-card"></i> NIC verification</div>
-        <div class="nic-verification">
-          <div class="cam-placeholder" id="liveCamPlaceholder">
-            <i class="fas fa-camera"></i>
-            <span>📸 tap to capture NIC</span>
-          </div>
-          <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-            <button class="btn-gold" style="flex:1; padding: 8px;" id="captureNICBtn"><i class="fas fa-camera-retro"></i> Capture & extract</button>
-            <button class="btn-outline-gold" id="resetNICBtn"><i class="fas fa-undo"></i></button>
-          </div>
-          <div class="nic-data">
-            <div class="data-row"><span class="label">NIC number</span><span class="value" id="nicNumber">1990-123456-7</span></div>
-            <div class="data-row"><span class="label">Full name</span><span class="value" id="nicName">John Doe</span></div>
-            <div class="data-row"><span class="label">Date of birth</span><span class="value" id="nicDob">1990-01-01</span></div>
-            <div class="data-row"><span class="label">Status</span><span class="value" style="color:#2ecc71;"><i class="fas fa-check-circle"></i> verified</span></div>
-          </div>
-          <div style="font-size:0.6rem; color:#6a6a7a; margin-top: 8px; display:flex; gap:8px;">
-            <span><i class="fas fa-database"></i> data saved (no image)</span>
-            <span><i class="fas fa-user-shield"></i> anti‑scam</span>
-          </div>
+<!-- ===== CHAT PAGE ===== -->
+<div id="chatPage" class="page hidden">
+    <div class="chat-header">
+        <div class="brand">💬 Chat<span>App</span></div>
+        <div class="user-info">
+            <span class="name" id="currentUserName">User</span>
+            <button class="btn-logout" id="logoutBtn">Logout</button>
         </div>
-      </div>
-
-      <div>
-        <div class="panel-title"><i class="fas fa-user-edit"></i> profile maker</div>
-        <div class="profile-maker">
-          <div class="input-group"><input type="text" placeholder="Display name" value="JohnD" id="profileNameInput"/></div>
-          <div class="input-group"><input type="text" placeholder="Bio / status" value="NIC verified · Sinhala/English" id="profileBioInput"/></div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn-gold" id="saveProfileBtn" style="flex:1;"><i class="fas fa-save"></i> update profile</button>
-            <button class="btn-outline-gold"><i class="fas fa-palette"></i> theme</button>
-          </div>
-          <div class="voice-row">
-            <span class="mic-badge"><i class="fas fa-language"></i> Sinhala / English</span>
-            <span class="mic-badge"><i class="fas fa-voice"></i> voice typing</span>
-            <span class="mic-badge"><i class="fas fa-file-audio"></i> voice record</span>
-          </div>
-        </div>
-        <div style="margin-top: 12px; background: rgba(0,0,0,0.15); border-radius: 20px; padding: 12px; border:1px solid rgba(255,215,0,0.03);">
-          <div style="display:flex; justify-content:space-between; color:#b0b0c0; font-size:0.7rem;">
-            <span><i class="fas fa-shield-alt" style="color:#f1c40f;"></i> NIC required for new contacts</span>
-            <span><i class="fas fa-check-circle" style="color:#2ecc71;"></i> 3 verified</span>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+    <div class="chat-layout">
+        <!-- Contacts Sidebar -->
+        <div class="contacts-sidebar">
+            <div class="search-add">
+                <input type="text" id="searchContact" placeholder="Search contacts..." />
+                <button class="btn-add-contact" id="addContactBtn">+ Add</button>
+            </div>
+            <div class="contacts-list" id="contactsList"></div>
+        </div>
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-chat">
+                    <span>💬</span>
+                    Select a contact to start chatting
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="messageInput" placeholder="Type a message..." />
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADD CONTACT MODAL ===== -->
+<div id="addContactModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>➕ Add Contact</h3>
+        <input type="text" id="contactName" placeholder="Contact's full name" />
+        <input type="email" id="contactEmail" placeholder="Contact's email address" />
+        <div class="modal-actions">
+            <button class="btn-confirm" id="confirmAddContact">Add</button>
+            <button class="btn-cancel" id="cancelAddContact">Cancel</button>
+        </div>
+        <div id="addContactError" class="error-msg" style="margin-top:8px;"></div>
+    </div>
 </div>
 
 <script>
-  (function() {
-    // Simulate NIC extraction & save to "database" (no image stored)
-    const nicData = {
-      number: '1990-123456-7',
-      name: 'John Doe',
-      dob: '1990-01-01'
-    };
+// ============================================================
+// 🔥 FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyCaMdPoVqGflbBhWhsuV4L2duqiASIbP64",
+    authDomain: "src-competion-web.firebaseapp.com",
+    projectId: "src-competion-web",
+    storageBucket: "src-competion-web.firebasestorage.app",
+    messagingSenderId: "568183938397",
+    appId: "1:568183938397:web:02d16665d7bd393d505cb4",
+    measurementId: "G-C0YQX47SR5"
+};
 
-    // DOM refs
-    const nicNumberEl = document.getElementById('nicNumber');
-    const nicNameEl = document.getElementById('nicName');
-    const nicDobEl = document.getElementById('nicDob');
-    const captureBtn = document.getElementById('captureNICBtn');
-    const resetBtn = document.getElementById('resetNICBtn');
-    const camPlaceholder = document.getElementById('liveCamPlaceholder');
-    const profileNameInput = document.getElementById('profileNameInput');
-    const profileBioInput = document.getElementById('profileBioInput');
-    const saveProfileBtn = document.getElementById('saveProfileBtn');
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-    // update NIC display
-    function updateNICDisplay(data) {
-      nicNumberEl.textContent = data.number;
-      nicNameEl.textContent = data.name;
-      nicDobEl.textContent = data.dob;
+// ============================================================
+// APP STATE
+// ============================================================
+let currentUser = null;          // firebase auth user
+let currentUserData = null;     // { uid, name, email, nicNumber, contacts: [] }
+let currentChatWith = null;     // email of the contact we're chatting with
+let contacts = [];              // array of { name, email, uid? }
+let allUsersCache = {};         // cache user data by email
+let unsubscribeMessages = null;
+let mediaStream = null;
+
+// DOM refs
+const $ = id => document.getElementById(id);
+const regPage = $('registerPage');
+const nicPage = $('nicPage');
+const chatPage = $('chatPage');
+const regEmail = $('regEmail');
+const regPassword = $('regPassword');
+const registerBtn = $('registerBtn');
+const regError = $('regError');
+const video = $('videoPreview');
+const captureBtn = $('captureBtn');
+const retryCamBtn = $('retryCamBtn');
+const nicStatus = $('nicStatus');
+const currentUserName = $('currentUserName');
+const logoutBtn = $('logoutBtn');
+const contactsList = $('contactsList');
+const chatMessages = $('chatMessages');
+const messageInput = $('messageInput');
+const sendBtn = $('sendBtn');
+const searchContact = $('searchContact');
+const addContactBtn = $('addContactBtn');
+const addContactModal = $('addContactModal');
+const contactName = $('contactName');
+const contactEmail = $('contactEmail');
+const confirmAddContact = $('confirmAddContact');
+const cancelAddContact = $('cancelAddContact');
+const addContactError = $('addContactError');
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(pageId) {
+    [regPage, nicPage, chatPage].forEach(p => p.classList.add('hidden'));
+    $(pageId).classList.remove('hidden');
+}
+
+// ============================================================
+// AUTH: REGISTRATION
+// ============================================================
+registerBtn.addEventListener('click', async () => {
+    const email = regEmail.value.trim();
+    const password = regPassword.value;
+    regError.textContent = '';
+
+    if (!email || !password) {
+        regError.textContent = 'Please fill in all fields.';
+        return;
+    }
+    if (password.length < 6) {
+        regError.textContent = 'Password must be at least 6 characters.';
+        return;
     }
 
-    // simulate capture & extract (like live cam)
-    function captureNIC() {
-      // simulate camera capture → extract text
-      const randomNIC = {
-        number: '1995-' + Math.floor(100000 + Math.random() * 900000) + '-' + Math.floor(1 + Math.random() * 9),
-        name: ['Amara Perera', 'Nuwan Silva', 'Kavindi J.', 'Mohamed F.', 'Saman K.'][Math.floor(Math.random() * 5)],
-        dob: `19${Math.floor(70 + Math.random() * 30)}-${String(Math.floor(1 + Math.random() * 12)).padStart(2,'0')}-${String(Math.floor(1 + Math.random() * 28)).padStart(2,'0')}`
-      };
-      // save to "database" (no image stored) – just update UI
-      nicData.number = randomNIC.number;
-      nicData.name = randomNIC.name;
-      nicData.dob = randomNIC.dob;
-      updateNICDisplay(nicData);
+    registerBtn.disabled = true;
+    registerBtn.textContent = 'Creating...';
 
-      // also update the profile name suggestion
-      profileNameInput.value = randomNIC.name.split(' ')[0] + 'D';
-
-      // visual feedback
-      camPlaceholder.innerHTML = `<i class="fas fa-check-circle" style="color:#2ecc71;"></i><span>✅ NIC captured & extracted</span>`;
-      setTimeout(() => {
-        camPlaceholder.innerHTML = `<i class="fas fa-camera"></i><span>📸 tap to capture NIC</span>`;
-      }, 2000);
-
-      // show message in chat (simulate)
-      const chatMessages = document.querySelector('.chat-messages');
-      const newMsg = document.createElement('div');
-      newMsg.className = 'message sent';
-      newMsg.innerHTML = `<i class="fas fa-id-card" style="color:#f1c40f;"></i> NIC verified: ${nicData.name} · data saved (no image)`;
-      chatMessages.appendChild(newMsg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+    try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        currentUser = cred.user;
+        
+        // Store user email in Firestore
+        await db.collection('users').doc(currentUser.uid).set({
+            email: email,
+            name: email.split('@')[0],
+            nicNumber: '',
+            contacts: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Move to NIC capture
+        showPage('nicPage');
+        startCamera();
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'Register';
+    } catch (err) {
+        regError.textContent = err.message;
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'Register';
     }
+});
 
-    // reset to default NIC
-    function resetNIC() {
-      nicData.number = '1990-123456-7';
-      nicData.name = 'John Doe';
-      nicData.dob = '1990-01-01';
-      updateNICDisplay(nicData);
-      profileNameInput.value = 'JohnD';
-      camPlaceholder.innerHTML = `<i class="fas fa-camera"></i><span>📸 tap to capture NIC</span>`;
-    }
-
-    // save profile (update profile preview)
-    function saveProfile() {
-      const name = profileNameInput.value.trim() || 'User';
-      const bio = profileBioInput.value.trim() || 'NIC verified';
-      const previewSpan = document.querySelector('.profile-preview span');
-      if (previewSpan) previewSpan.textContent = name;
-      // also update chat header
-      const chatUserSpan = document.querySelector('.chat-user strong');
-      if (chatUserSpan) chatUserSpan.textContent = name;
-
-      // feedback
-      const btn = saveProfileBtn;
-      btn.innerHTML = '<i class="fas fa-check"></i> saved';
-      setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i> update profile'; }, 1500);
-    }
-
-    // event listeners
-    captureBtn.addEventListener('click', captureNIC);
-    resetBtn.addEventListener('click', resetNIC);
-    saveProfileBtn.addEventListener('click', saveProfile);
-
-    // live cam placeholder click also triggers capture
-    camPlaceholder.addEventListener('click', captureNIC);
-
-    // simulate "voice typing" / "voice record" – just UI feedback
-    document.querySelectorAll('.action-btn .fa-microphone, .action-btn .fa-paperclip, .action-btn .fa-poll, .action-btn .fa-location-dot').forEach(el => {
-      el.parentElement.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const icon = this.querySelector('i');
-        if (icon) {
-          const original = icon.className;
-          icon.className = 'fas fa-check-circle';
-          setTimeout(() => { icon.className = original; }, 800);
+// ============================================================
+// CAMERA & NIC CAPTURE
+// ============================================================
+async function startCamera() {
+    try {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
         }
-      });
-    });
+        mediaStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
+        });
+        video.srcObject = mediaStream;
+        await video.play();
+        nicStatus.innerHTML = '📷 Position your NIC in frame and tap Capture';
+        captureBtn.disabled = false;
+    } catch (err) {
+        nicStatus.innerHTML = '❌ Camera error: ' + err.message + '. Please allow camera access.';
+        captureBtn.disabled = true;
+    }
+}
 
-    // initial display
-    updateNICDisplay(nicData);
+retryCamBtn.addEventListener('click', startCamera);
 
-    // extra: if a contact without NIC is clicked (just demo)
-    document.querySelectorAll('.contact-item').forEach((item, idx) => {
-      item.addEventListener('click', function() {
-        const nameEl = this.querySelector('.name');
-        if (nameEl) {
-          const chatName = document.querySelector('.chat-user strong');
-          if (chatName) chatName.textContent = nameEl.textContent;
-          // show NIC badge if verified
-          const hasNic = this.querySelector('.nic-badge') || this.querySelector('.fa-check-circle');
-          const badge = document.querySelector('.chat-user .nic-badge');
-          if (badge) {
-            if (hasNic) {
-              badge.style.display = 'inline-block';
-            } else {
-              badge.style.display = 'none';
+captureBtn.addEventListener('click', async () => {
+    captureBtn.disabled = true;
+    nicStatus.innerHTML = '<span class="spinner"></span> Capturing...';
+
+    // Capture image from video
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+    try {
+        nicStatus.innerHTML = '<span class="spinner"></span> Reading NIC details with OCR...';
+        
+        // Perform OCR using Tesseract.js
+        const result = await Tesseract.recognize(imageDataUrl, 'eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    nicStatus.innerHTML = `<span class="spinner"></span> Reading... ${Math.round(m.progress * 100)}%`;
+                }
             }
-          }
+        });
+        
+        const text = result.data.text;
+        console.log('OCR Text:', text);
+        
+        // Parse NIC details (Sri Lankan NIC format)
+        const nicData = parseNICDetails(text);
+        
+        if (nicData.nicNumber || nicData.fullName) {
+            // Save to Firestore
+            await db.collection('users').doc(currentUser.uid).update({
+                nicNumber: nicData.nicNumber || '',
+                name: nicData.fullName || currentUserData?.name || currentUser.email.split('@')[0],
+                nicDetails: nicData
+            });
+            
+            // Update local user data
+            currentUserData = await getUserData(currentUser.uid);
+            nicStatus.innerHTML = `✅ NIC captured! Found: ${nicData.fullName || 'Name'} (${nicData.nicNumber || 'N/A'})`;
+            
+            // Move to chat after short delay
+            setTimeout(() => {
+                showPage('chatPage');
+                loadChat();
+                captureBtn.disabled = false;
+            }, 1500);
+        } else {
+            nicStatus.innerHTML = '⚠️ Could not read NIC details clearly. Please try again with better lighting.';
+            captureBtn.disabled = false;
         }
-      });
-    });
+    } catch (err) {
+        console.error('OCR Error:', err);
+        nicStatus.innerHTML = '❌ Error reading NIC: ' + err.message;
+        captureBtn.disabled = false;
+    }
+});
 
-  })();
+// Parse Sri Lankan NIC details from OCR text
+function parseNICDetails(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    let nicNumber = '';
+    let fullName = '';
+    let birthYear = '';
+    let gender = '';
+    
+    // Find NIC number (10 digits + optional V or X)
+    const nicRegex = /(\d{9}[VvXx]|\d{12})/;
+    for (const line of lines) {
+        const match = line.match(nicRegex);
+        if (match) {
+            nicNumber = match[1].toUpperCase();
+            break;
+        }
+    }
+    
+    // Try to find name (usually follows NIC number or appears in lines with multiple words)
+    if (nicNumber) {
+        const nicIndex = text.indexOf(nicNumber);
+        if (nicIndex !== -1) {
+            const afterNic = text.substring(nicIndex + nicNumber.length);
+            const linesAfter = afterNic.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            for (const line of linesAfter) {
+                // Look for a line with 2-4 words that could be a name
+                const words = line.split(/\s+/);
+                if (words.length >= 2 && words.length <= 5 && line.length < 100) {
+                    // Check if it looks like a name (not containing numbers)
+                    if (!/\d/.test(line) && line.length > 5) {
+                        fullName = line;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    // If no name found, try to find it from the text
+    if (!fullName) {
+        for (const line of lines) {
+            const words = line.split(/\s+/);
+            if (words.length >= 2 && words.length <= 5 && !/\d/.test(line) && line.length > 5 && line.length < 50) {
+                fullName = line;
+                break;
+            }
+        }
+    }
+    
+    // Determine gender from NIC number (if 10 digits with V/X)
+    if (nicNumber.length === 10) {
+        const digits = nicNumber.substring(0, 9);
+        const day = parseInt(digits.substring(2, 5));
+        if (day > 500) {
+            gender = 'Female';
+        } else {
+            gender = 'Male';
+        }
+        // Extract birth year
+        const yearPrefix = parseInt(digits.substring(0, 2));
+        birthYear = (yearPrefix >= 24 ? '19' : '20') + String(yearPrefix).padStart(2, '0');
+    }
+    
+    return {
+        nicNumber: nicNumber,
+        fullName: fullName || 'User',
+        birthYear: birthYear,
+        gender: gender,
+        rawText: text.substring(0, 500) // Store first 500 chars for reference
+    };
+}
+
+// ============================================================
+// USER DATA
+// ============================================================
+async function getUserData(uid) {
+    const doc = await db.collection('users').doc(uid).get();
+    if (doc.exists) {
+        return { uid, ...doc.data() };
+    }
+    return null;
+}
+
+// ============================================================
+// CHAT FUNCTIONALITY
+// ============================================================
+async function loadChat() {
+    if (!currentUser) return;
+    
+    // Get current user data
+    currentUserData = await getUserData(currentUser.uid);
+    if (!currentUserData) return;
+    
+    currentUserName.textContent = currentUserData.name || currentUser.email.split('@')[0];
+    
+    // Load contacts
+    contacts = currentUserData.contacts || [];
+    renderContacts();
+    
+    // Load messages for current chat
+    if (currentChatWith) {
+        loadMessages(currentChatWith);
+    }
+}
+
+function renderContacts() {
+    const searchTerm = searchContact.value.toLowerCase().trim();
+    let filteredContacts = contacts;
+    
+    if (searchTerm) {
+        filteredContacts = contacts.filter(c => 
+            c.name.toLowerCase().includes(searchTerm) || 
+            c.email.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    if (filteredContacts.length === 0) {
+        contactsList.innerHTML = `
+            <div style="padding: 40px 20px; text-align: center; color: #8696a0; font-size: 14px;">
+                ${contacts.length === 0 ? 'No contacts yet. Add one using the + button.' : 'No contacts match your search.'}
+            </div>
+        `;
+        return;
+    }
+    
+    contactsList.innerHTML = filteredContacts.map(contact => `
+        <div class="contact-item ${currentChatWith === contact.email ? 'active' : ''}" 
+             data-email="${contact.email}"
+             onclick="selectContact('${contact.email}')">
+            <div class="avatar">${contact.name.charAt(0).toUpperCase()}</div>
+            <div class="info">
+                <div class="name">${contact.name}</div>
+                <div class="email">${contact.email}</div>
+                <div class="last-msg">${contact.lastMessage || 'Tap to chat'}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Make selectContact globally accessible
+window.selectContact = function(email) {
+    currentChatWith = email;
+    renderContacts();
+    loadMessages(email);
+};
+
+async function loadMessages(contactEmail) {
+    // Clear existing messages listener
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+    }
+    
+    const chatId = getChatId(currentUser.email, contactEmail);
+    
+    // Show loading state
+    chatMessages.innerHTML = '<div class="empty-chat"><span>⏳</span> Loading messages...</div>';
+    
+    // Listen for new messages
+    unsubscribeMessages = db.collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                chatMessages.innerHTML = `
+                    <div class="empty-chat">
+                        <span>💬</span>
+                        No messages yet. Say hello!
+                    </div>
+                `;
+                return;
+            }
+            
+            let messagesHTML = '';
+            snapshot.forEach(doc => {
+                const msg = doc.data();
+                const isSent = msg.sender === currentUser.email;
+                messagesHTML += `
+                    <div class="msg ${isSent ? 'sent' : 'received'}">
+                        ${!isSent ? `<span class="sender">${msg.senderName || 'Unknown'}</span>` : ''}
+                        ${msg.text}
+                        <span class="time-stamp">${msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
+                    </div>
+                `;
+            });
+            
+            chatMessages.innerHTML = messagesHTML;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Update last message in contact list
+            if (snapshot.docs.length > 0) {
+                const lastMsg = snapshot.docs[snapshot.docs.length - 1].data();
+                const contact = contacts.find(c => c.email === contactEmail);
+                if (contact) {
+                    contact.lastMessage = lastMsg.text;
+                    // Update in Firestore
+                    updateContactLastMessage(contactEmail, lastMsg.text);
+                }
+            }
+        }, (error) => {
+            console.error('Messages listener error:', error);
+            chatMessages.innerHTML = `<div class="empty-chat"><span>❌</span> Error loading messages</div>`;
+        });
+}
+
+function getChatId(email1, email2) {
+    return [email1, email2].sort().join('_');
+}
+
+async function updateContactLastMessage(email, lastMessage) {
+    if (!currentUser) return;
+    const userRef = db.collection('users').doc(currentUser.uid);
+    const contacts = currentUserData.contacts || [];
+    const updatedContacts = contacts.map(c => {
+        if (c.email === email) {
+            return { ...c, lastMessage };
+        }
+        return c;
+    });
+    await userRef.update({ contacts: updatedContacts });
+    currentUserData.contacts = updatedContacts;
+}
+
+// ============================================================
+// SEND MESSAGE
+// ============================================================
+sendBtn.addEventListener('click', sendMessage);
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+async function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text || !currentChatWith || !currentUser) return;
+    
+    const chatId = getChatId(currentUser.email, currentChatWith);
+    
+    // Get contact name
+    const contact = contacts.find(c => c.email === currentChatWith);
+    const contactName = contact ? contact.name : currentChatWith;
+    
+    // Get sender name
+    const senderName = currentUserData?.name || currentUser.email.split('@')[0];
+    
+    try {
+        await db.collection('chats').doc(chatId).collection('messages').add({
+            text: text,
+            sender: currentUser.email,
+            senderName: senderName,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            recipient: currentChatWith,
+            recipientName: contactName
+        });
+        
+        messageInput.value = '';
+        messageInput.focus();
+    } catch (err) {
+        console.error('Send message error:', err);
+        alert('Failed to send message: ' + err.message);
+    }
+}
+
+// ============================================================
+// ADD CONTACT
+// ============================================================
+addContactBtn.addEventListener('click', () => {
+    addContactModal.classList.remove('hidden');
+    contactName.value = '';
+    contactEmail.value = '';
+    addContactError.textContent = '';
+});
+
+cancelAddContact.addEventListener('click', () => {
+    addContactModal.classList.add('hidden');
+});
+
+confirmAddContact.addEventListener('click', async () => {
+    const name = contactName.value.trim();
+    const email = contactEmail.value.trim().toLowerCase();
+    addContactError.textContent = '';
+    
+    if (!name || !email) {
+        addContactError.textContent = 'Please fill in all fields.';
+        return;
+    }
+    
+    if (email === currentUser.email) {
+        addContactError.textContent = 'You cannot add yourself as a contact.';
+        return;
+    }
+    
+    // Check if contact already exists
+    if (contacts.some(c => c.email === email)) {
+        addContactError.textContent = 'This contact is already in your list.';
+        return;
+    }
+    
+    // Check if user exists in Firestore
+    try {
+        const usersSnapshot = await db.collection('users')
+            .where('email', '==', email)
+            .get();
+        
+        if (usersSnapshot.empty) {
+            addContactError.textContent = 'No user found with this email. Make sure they have registered.';
+            return;
+        }
+        
+        // Add contact to user's contacts
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const newContact = { name, email, lastMessage: '' };
+        const updatedContacts = [...contacts, newContact];
+        
+        await userRef.update({ contacts: updatedContacts });
+        
+        contacts = updatedContacts;
+        currentUserData.contacts = updatedContacts;
+        renderContacts();
+        addContactModal.classList.add('hidden');
+        
+        // Auto-select new contact
+        selectContact(email);
+        
+    } catch (err) {
+        addContactError.textContent = 'Error adding contact: ' + err.message;
+    }
+});
+
+// ============================================================
+// SEARCH CONTACTS
+// ============================================================
+searchContact.addEventListener('input', renderContacts);
+
+// ============================================================
+// LOGOUT
+// ============================================================
+logoutBtn.addEventListener('click', async () => {
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+    }
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+    }
+    await auth.signOut();
+    currentUser = null;
+    currentUserData = null;
+    contacts = [];
+    currentChatWith = null;
+    showPage('registerPage');
+});
+
+// ============================================================
+// AUTH STATE OBSERVER
+// ============================================================
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        currentUser = user;
+        currentUserData = await getUserData(user.uid);
+        
+        // Check if NIC is already captured
+        if (currentUserData && currentUserData.nicNumber) {
+            showPage('chatPage');
+            loadChat();
+        } else {
+            showPage('nicPage');
+            startCamera();
+        }
+    } else {
+        showPage('registerPage');
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+        }
+    }
+});
+
+// ============================================================
+// INITIAL SETUP
+// ============================================================
+console.log('ChatApp loaded successfully!');
 </script>
 </body>
 </html>
