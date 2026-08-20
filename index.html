@@ -1,909 +1,2171 @@
-Here is the complete HTML document that solves the fetch error and ensures your "Me Awurudu Kale" chords appear instantly when searched.
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="google-site-verification" content="1BlhdML3YtT1fgoJu8RuRBiJW11_dys-854P7DB7t9k" />
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>ChordScout | Me Awurudu Kale Chords & Music Search</title>
-  <!-- Google Fonts + Font Awesome for Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VERI-CHAT - Secure Messenger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f8fafc;
-      color: #0f172a;
-      line-height: 1.5;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
+        :root {
+            --primary: #0F172A;
+            --secondary: #1E293B;
+            --accent: #2DD4BF;
+            --accent-hover: #14B8A6;
+            --warning: #FBBF24;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --glass-bg: rgba(30, 41, 59, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --radius: 16px;
+            --radius-sm: 8px;
+        }
 
-    .navbar {
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.05);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid #e2e8f0;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    .nav-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0.85rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
+        /* Auth Pages */
+        .auth-page {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary);
+            padding: 20px;
+        }
+        .auth-container {
+            max-width: 420px;
+            width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 40px;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .auth-header i {
+            font-size: 48px;
+            color: var(--accent);
+        }
+        .auth-header h1 {
+            margin-top: 16px;
+            font-weight: 700;
+        }
+        .auth-header p {
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        .auth-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .auth-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
 
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+        /* Navbar */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
 
-    .logo-icon {
-      font-size: 1.8rem;
-      color: #3b82f6;
-    }
+        .nav-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .logo-text {
-      font-weight: 700;
-      font-size: 1.45rem;
-      letter-spacing: -0.3px;
-      background: linear-gradient(135deg, #1e293b, #3b82f6);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
 
-    .search-engine {
-      flex: 1;
-      max-width: 520px;
-      min-width: 260px;
-    }
+        .nav-brand i {
+            font-size: 24px;
+        }
 
-    .search-wrapper {
-      display: flex;
-      align-items: center;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 60px;
-      padding: 0.4rem 0.4rem 0.4rem 1.2rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }
-    .search-wrapper:focus-within {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-    }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .search-wrapper i {
-      color: #94a3b8;
-      font-size: 1.1rem;
-    }
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
 
-    #searchInput {
-      flex: 1;
-      border: none;
-      padding: 0.7rem 0.8rem;
-      font-size: 0.95rem;
-      background: transparent;
-      outline: none;
-      font-weight: 500;
-      color: #0f172a;
-    }
+        .nav-link:hover {
+            background: rgba(45, 212, 191, 0.1);
+            color: var(--text-primary);
+        }
 
-    #searchInput::placeholder {
-      color: #94a3b8;
-      font-weight: 400;
-    }
+        .nav-link.active {
+            background: rgba(45, 212, 191, 0.15);
+            color: var(--accent);
+        }
 
-    .search-btn {
-      background: #3b82f6;
-      border: none;
-      color: white;
-      padding: 0.55rem 1.2rem;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
 
-    .search-btn:hover {
-      background: #2563eb;
-      transform: scale(0.97);
-    }
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.25);
+            transform: translateY(-1px);
+        }
 
-    .nav-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
+        .nav-toggle {
+            display: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+        }
 
-    .badge {
-      background: #eef2ff;
-      padding: 0.4rem 0.9rem;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #1e40af;
-    }
+        /* Main Content */
+        .main-content {
+            margin-top: 64px;
+            height: calc(100vh - 64px);
+            position: relative;
+        }
 
-    .container {
-      max-width: 1400px;
-      margin: 2rem auto;
-      padding: 0 2rem;
-      flex: 1;
-    }
+        .page-container {
+            display: none;
+            height: 100%;
+            padding: 20px;
+        }
 
-    .results-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
+        .page-container.active {
+            display: block;
+        }
 
-    .results-header h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
+        /* Chat Layout */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            height: 100%;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-    .song-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
+        .chat-sidebar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .song-card {
-      background: white;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-      border: 1px solid #eef2ff;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-sm);
+            padding: 0 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
 
-    .song-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.1);
-      border-color: #cbdffc;
-    }
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1);
+        }
 
-    .thumbnail-placeholder {
-      background: linear-gradient(145deg, #e2e8f0, #f1f5f9);
-      height: 150px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #475569;
-      font-size: 2.5rem;
-      overflow: hidden;
-    }
+        .search-bar i {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
 
-    .card-content {
-      padding: 1rem 1.2rem 1.2rem;
-    }
+        .search-bar input {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            padding: 10px 12px;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+        }
 
-    .song-title {
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+        .search-bar input::placeholder {
+            color: var(--text-secondary);
+        }
 
-    .song-channel {
-      font-size: 0.75rem;
-      color: #5b6e8c;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 6px;
-    }
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
 
-    .chord-badge {
-      margin-top: 12px;
-      background: #eef2ff;
-      display: inline-block;
-      padding: 0.2rem 0.7rem;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #2563eb;
-    }
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
 
-    .chord-panel {
-      margin-top: 2rem;
-      background: #ffffff;
-      border-radius: 28px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2edff;
-      overflow: hidden;
-      transition: 0.2s;
-    }
+        .chat-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
 
-    .panel-header {
-      background: #f1f5f9;
-      padding: 1rem 1.8rem;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
+        .chat-item.active {
+            background: rgba(45, 212, 191, 0.15);
+        }
 
-    .panel-header h3 {
-      font-weight: 600;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        .chat-item-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #0891B2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--primary);
+            position: relative;
+        }
 
-    .copy-btn {
-      background: none;
-      border: 1px solid #cbd5e1;
-      padding: 0.4rem 1rem;
-      border-radius: 30px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: 0.2s;
-      background: white;
-    }
+        .chat-item-info {
+            flex: 1;
+            min-width: 0;
+        }
 
-    .copy-btn:hover {
-      background: #eef2ff;
-      border-color: #3b82f6;
-    }
+        .chat-item-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
 
-    .chord-content {
-      padding: 1.8rem;
-      max-height: 550px;
-      overflow-y: auto;
-      background: #fefdf7;
-      font-family: 'Courier New', 'SF Mono', monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+        .chat-item-last {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .chord-content pre {
-      font-family: 'Courier New', 'SF Mono', monospace;
-      background: transparent;
-      margin: 0;
-      white-space: pre-wrap;
-    }
+        .chat-item-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
 
-    .loading-spinner {
-      display: flex;
-      justify-content: center;
-      padding: 2rem;
-      color: #3b82f6;
-    }
+        .chat-window {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 40px;
+        }
 
-    .empty-message {
-      text-align: center;
-      padding: 3rem;
-      color: #64748b;
-      font-style: italic;
-    }
+        .chat-placeholder {
+            text-align: center;
+            max-width: 400px;
+        }
 
-    .error-message {
-      color: #b91c1c;
-      background: #fee2e2;
-      padding: 0.8rem;
-      border-radius: 16px;
-    }
+        .chat-placeholder h2 {
+            margin: 24px 0 12px;
+            font-weight: 600;
+        }
 
-    .professional-footer {
-      background: #0f172a;
-      color: #e2e8f0;
-      margin-top: 3rem;
-      border-top: 1px solid #1e293b;
-    }
+        .chat-placeholder p {
+            color: var(--text-secondary);
+        }
 
-    .footer-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem 2rem 1.5rem;
-    }
+        /* Contacts Layout */
+        .contacts-layout {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            height: 100%;
+        }
 
-    .footer-main {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
+        .contacts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
 
-    .footer-brand {
-      flex: 1;
-      min-width: 200px;
-    }
+        .contacts-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
 
-    .footer-brand h3 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #c084fc, #60a5fa);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      display: inline-block;
-    }
+        .btn-add-contact {
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .footer-brand .tagline {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-top: 0.5rem;
-      line-height: 1.4;
-    }
+        .btn-add-contact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+        }
 
-    .footer-creator {
-      flex: 1;
-      min-width: 200px;
-    }
+        .contacts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            max-height: calc(100% - 80px);
+        }
 
-    .footer-creator h4, .footer-links h4 {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
-      color: #94a3b8;
-      margin-bottom: 1rem;
-    }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
 
-    .creator-name {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin-bottom: 0.25rem;
-    }
+        .contact-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
 
-    .studio-name {
-      font-size: 0.9rem;
-      color: #a5b4fc;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: rgba(165, 180, 252, 0.12);
-      padding: 0.2rem 0.8rem;
-      border-radius: 40px;
-    }
+        .contact-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FBBF24, #F59E0B);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
 
-    .footer-links {
-      flex: 1;
-      min-width: 160px;
-    }
+        .contact-info {
+            flex: 1;
+        }
 
-    .footer-links ul {
-      list-style: none;
-    }
+        .contact-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
 
-    .footer-links li {
-      margin-bottom: 0.6rem;
-    }
+        .contact-email {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
 
-    .footer-links a {
-      color: #cbd5e1;
-      text-decoration: none;
-      font-size: 0.85rem;
-      transition: 0.2s;
-    }
+        .contact-verified {
+            color: var(--accent);
+            font-size: 12px;
+        }
 
-    .footer-links a:hover {
-      color: #60a5fa;
-      padding-left: 4px;
-    }
+        .btn-chat {
+            padding: 8px 16px;
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
 
-    .footer-bottom {
-      border-top: 1px solid #1e293b;
-      padding-top: 1.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      font-size: 0.75rem;
-      color: #64748b;
-    }
+        .btn-chat:hover {
+            transform: scale(1.05);
+        }
 
-    .social-icons {
-      display: flex;
-      gap: 1.2rem;
-    }
+        /* Profile Layout */
+        .profile-layout {
+            max-width: 600px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
 
-    .social-icons a {
-      color: #64748b;
-      font-size: 1.1rem;
-      transition: 0.2s;
-    }
+        .profile-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 40px;
+            width: 100%;
+        }
 
-    .social-icons a:hover {
-      color: #60a5fa;
-      transform: translateY(-2px);
-    }
+        .profile-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
 
-    .premium-badge {
-      background: #10b98120;
-      color: #059669;
-      border-left: 3px solid #10b981;
-      padding: 8px 16px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--accent), #0891B2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary);
+            overflow: hidden;
+            border: 3px solid var(--accent);
+        }
 
-    @media (max-width: 700px) {
-      .nav-container {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .search-engine {
-        max-width: 100%;
-      }
-      .container {
-        padding: 0 1rem;
-      }
-      .footer-main {
-        flex-direction: column;
-        gap: 1.5rem;
-      }
-    }
-  </style>
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-header h2 {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .profile-email {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .verification-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        .verification-badge.verified {
+            background: rgba(45, 212, 191, 0.15);
+            color: var(--accent);
+        }
+
+        .profile-body {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .profile-field {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+        }
+
+        .profile-field label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .profile-field p {
+            margin-top: 4px;
+            font-size: 16px;
+        }
+
+        .btn-edit-profile, .btn-verify {
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-edit-profile {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-edit-profile:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-verify {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content.modal-large {
+            max-width: 700px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 28px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .modal-content h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .modal-description {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+        }
+
+        /* Verify Modal */
+        .verify-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #video {
+            width: 100%;
+            background: var(--primary);
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--glass-border);
+        }
+
+        .verify-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-camera, .btn-capture {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-camera {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-capture {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .btn-capture:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ocr-result {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .ocr-result h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .ocr-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ocr-field:last-child {
+            border-bottom: none;
+        }
+
+        .ocr-field label {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .ocr-field span {
+            font-weight: 500;
+        }
+
+        .btn-verify-save {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-verify-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Chat Modal */
+        .chat-modal {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary);
+            z-index: 1500;
+            display: none;
+            flex-direction: column;
+        }
+
+        .chat-modal.show {
+            display: flex;
+        }
+
+        .chat-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .chat-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .chat-user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .chat-user-info h4 {
+            font-weight: 600;
+        }
+
+        .chat-user-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .btn-more {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.sent {
+            background: var(--accent);
+            color: var(--primary);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.received {
+            background: var(--secondary);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 4px;
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-input {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-attach, .btn-voice, .btn-send {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-send {
+            background: var(--accent);
+            color: var(--primary);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .btn-send:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .chat-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-sidebar {
+                display: none;
+            }
+            
+            .chat-sidebar.active {
+                display: flex;
+            }
+            
+            .chat-window {
+                display: none;
+            }
+            
+            .chat-window.active {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: var(--secondary);
+                flex-direction: column;
+                padding: 16px;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-toggle {
+                display: block;
+            }
+            
+            .profile-card {
+                padding: 24px;
+            }
+            
+            .modal-content {
+                padding: 24px;
+                width: 95%;
+            }
+            
+            .verify-controls {
+                flex-direction: column;
+            }
+        }
+
+        /* Hidden utility */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Auth page container - show/hide */
+        #authPages {
+            display: none;
+        }
+
+        #authPages.show {
+            display: block;
+        }
+
+        #mainApp {
+            display: none;
+        }
+
+        #mainApp.show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-
-<nav class="navbar">
-  <div class="nav-container">
-    <div class="logo-area">
-      <i class="fas fa-guitar logo-icon"></i>
-      <span class="logo-text">ChordScout</span>
-    </div>
-    <div class="search-engine">
-      <div class="search-wrapper">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Search any song... Try 'Me Awurudu Kale' for instant chords!" autocomplete="off">
-        <button class="search-btn" id="searchBtn"><i class="fas fa-music"></i> Find</button>
-      </div>
-    </div>
-    <div class="nav-actions">
-      <div class="badge"><i class="fas fa-chord"></i> Premium Chords Library</div>
-    </div>
-  </div>
-</nav>
-
-<main class="container">
-  <div class="results-header">
-    <h2><i class="fas fa-music"></i> Song Results</h2>
-    <span style="font-size: 0.8rem;">✨ Click any song to view chords</span>
-  </div>
-  
-  <div id="songsContainer" class="song-grid">
-    <div class="empty-message">🎵 Search for a song name above. <br>🔥 <strong>"Me Awurudu Kale"</strong> has premium chords ready!</div>
-  </div>
-
-  <div id="chordPanel" class="chord-panel" style="display: none;">
-    <div class="panel-header">
-      <h3><i class="fas fa-chord"></i> <span id="currentSongTitle">Chord Sheet</span></h3>
-      <button id="copyChordBtn" class="copy-btn"><i class="far fa-copy"></i> Copy chords</button>
-    </div>
-    <div id="chordContent" class="chord-content">
-       [Introduction]
--------------------------------------------------------------------------------
-|C | - |Dm | - |
-|Fm|Cm |Fm |Cm |
-|Dm| - | F | - |
-|Dm| - | C | - |
-[Chorus]
--------------------------------------------------------------------------------
-C/Dm        Dm  C/Dm            Dm
-Me aurudu kale sinaha weyan raale
-C/Dm            Cm            Dm
-Thel ihiruna kewu gediya waage
-C         
-Aaaaaa aaaaaaaaa aaaaaaaaaaaaa //
-Dm                         C
-Aaa haaaaaa aaaaa aaaa aaaa aaaa //
-[Inter]
--------------------------------------------------------------------------------
-|Dm| + | + | + | //
-|Am| - | - | G |
-|C |Am | C |Am |
-|C | - | - | - |
-[Verse 1]
--------------------------------------------------------------------------------
-C
-Don tharikita keththa do don
-C
-Pila watakara keththa do don
-C
-Dama thella dingisi dingoi
-C
-Dama thella thaka theiyath than
-C
-Kewum kokis thele bedei
-C
-Kawili suwanda sithata denei
-F
-Baa baa baa kikili eye ude giya kikili
-F
-Thama awe na kikili baa baa baaaaa
-F                    C           Dm                 C
-Gath thincaaa thinchaa gathi gatha go gati gatha go
-F                C         Dm                  C
-Onchili chili waram gama dewanath wenna
-Eb7               C      Eb7            C
-Mengiri dingo oooo aurudu awo oooo 
-[Verse 2]
--------------------------------------------------------------------------------
-C
-Don tharikita keththa do don
-C
-Pila watakara keththa do don
-C
-Dama thella dingisi dingoi
-C
-Dama thella thaka theiyath than
-C
-Kewum kokis thele bedei
-C
-Kawili suwanda sithata denei
-F
-Baa baa baa kikili eye ude giya kikili
-F
-Thama awe na kikili baa baa baaaaa
-F                    C           Dm                 C
-Gath thincaaa thinchaa gathi gatha go gati gatha go
-F                C         Dm                  C
-Onchili chili waram gama dewanath wenna
-Eb7               C      Eb7            C
-Mengiri dingo oooo aurudu awo oooo 
-
-    </div>
-  </div>
-</main>
-
-<footer class="professional-footer">
-  <div class="footer-container">
-    <div class="footer-main">
-      <div class="footer-brand">
-        <h3>ChordScout</h3>
-        <div class="tagline">
-          <i class="fas fa-globe"></i> Instant chord sheets • No redirects<br>
-          Premium Sinhala song chords available
+    <!-- AUTH PAGES -->
+    <div id="authPages">
+        <!-- Login Page -->
+        <div id="loginPage" class="auth-page">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>VERI-CHAT</h1>
+                    <p>Secure & Verified Messaging</p>
+                </div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                </form>
+                <div class="auth-link">
+                    Don't have an account? <a onclick="showRegister()">Register here</a>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="footer-creator">
-        <h4><i class="fas fa-code"></i> Creator</h4>
-        <div class="creator-name">Sahan Lakmina</div>
-        <div class="studio-name">
-          <i class="fas fa-crown"></i> @ SL Tech Studios
+
+        <!-- Register Page -->
+        <div id="registerPage" class="auth-page hidden">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>VERI-CHAT</h1>
+                    <p>Create your secure account</p>
+                </div>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Display Name</label>
+                        <input type="text" id="registerDisplayName" placeholder="Your display name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="registerEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="registerPassword" placeholder="Minimum 6 characters" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn-primary">Register</button>
+                </form>
+                <div class="auth-link">
+                    Already have an account? <a onclick="showLogin()">Login here</a>
+                </div>
+            </div>
         </div>
-        <div class="tagline" style="margin-top: 8px;">
-          <i class="fas fa-music"></i> Music tech · Chord solutions
-        </div>
-      </div>
-      <div class="footer-links">
-        <h4>Explore</h4>
-        <ul>
-          <li><a href="#" id="aboutLink"><i class="fas fa-info-circle"></i> About</a></li>
-          <li><a href="#" id="chordsGuideLink"><i class="fas fa-chord"></i> Chords Guide</a></li>
-          <li><a href="#" id="contactLink"><i class="fas fa-envelope"></i> Contact</a></li>
-        </ul>
-      </div>
     </div>
-    <div class="footer-bottom">
-      <div>© 2025 ChordScout — Intelligent music companion</div>
-      <div class="social-icons">
-        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-        <a href="#" aria-label="Youtube Music"><i class="fab fa-youtube"></i></a>
-      </div>
+
+    <!-- MAIN APP -->
+    <div id="mainApp">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <i class="fas fa-shield-alt" style="color: #2DD4BF;"></i>
+                    <span>VERI-CHAT</span>
+                </div>
+                <div class="nav-links" id="navLinks">
+                    <a class="nav-link active" data-page="chat"><i class="fas fa-comment-dots"></i> Chat</a>
+                    <a class="nav-link" data-page="contacts"><i class="fas fa-address-book"></i> Contacts</a>
+                    <a class="nav-link" data-page="profile"><i class="fas fa-user-circle"></i> Profile</a>
+                    <button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+                <div class="nav-toggle" id="navToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Chat Container -->
+            <div id="chatContainer" class="page-container active">
+                <div class="chat-layout">
+                    <!-- Sidebar -->
+                    <div class="chat-sidebar" id="chatSidebar">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search or start new chat..." id="searchInput">
+                        </div>
+                        <div class="chat-list" id="chatList">
+                            <!-- Chats will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Window -->
+                    <div class="chat-window" id="chatWindow">
+                        <div class="chat-placeholder">
+                            <i class="fas fa-comment-dots" style="font-size: 64px; color: #2DD4BF;"></i>
+                            <h2>Select a chat to start messaging</h2>
+                            <p>Your messages are end-to-end encrypted</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contacts Container -->
+            <div id="contactsContainer" class="page-container">
+                <div class="contacts-layout">
+                    <div class="contacts-header">
+                        <h2><i class="fas fa-address-book"></i> Contacts</h2>
+                        <button class="btn-add-contact" id="addContactBtn"><i class="fas fa-user-plus"></i> Add Contact</button>
+                    </div>
+                    <div class="contacts-list" id="contactsList">
+                        <!-- Contacts will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Container -->
+            <div id="profileContainer" class="page-container">
+                <div class="profile-layout">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar" id="profileAvatar">
+                                <img src="" alt="Profile" id="profileImage">
+                            </div>
+                            <h2 id="profileName">User Name</h2>
+                            <p class="profile-email" id="profileEmail">user@email.com</p>
+                            <div class="verification-badge" id="verificationBadge">
+                                <i class="fas fa-check-circle"></i> <span id="verificationStatus">Not Verified</span>
+                            </div>
+                        </div>
+                        <div class="profile-body">
+                            <div class="profile-field">
+                                <label>Bio</label>
+                                <p id="profileBio">Hey there! I'm using VERI-CHAT</p>
+                            </div>
+                            <div class="profile-field">
+                                <label>NIC Number</label>
+                                <p id="profileNic">Not provided</p>
+                            </div>
+                            <div class="profile-field">
+                                <label>Full Name (as per NIC)</label>
+                                <p id="profileFullName">Not verified</p>
+                            </div>
+                            <button class="btn-edit-profile" id="editProfileBtn"><i class="fas fa-edit"></i> Edit Profile</button>
+                            <button class="btn-verify" id="verifyIdentityBtn"><i class="fas fa-id-card"></i> Verify Identity</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</footer>
 
-<script>
-  // ============================================================
-  // PREMIUM CHORD SHEET: "Me Awurudu Kale" - Exact chords provided
-  // ============================================================
-  const ME_AWURUDU_KALE_CHORDS = `[Introduction]
--------------------------------------------------------------------------------
-|C | - |Dm | - |
-|Fm|Cm |Fm |Cm |
-|Dm| - | F | - |
-|Dm| - | C | - |
-
-[Chorus]
--------------------------------------------------------------------------------
-C/Dm        Dm  C/Dm            Dm
-Me aurudu kale sinaha weyan raale
-C/Dm            Cm            Dm
-Thel ihiruna kewu gediya waage
-C         
-Aaaaaa aaaaaaaaa aaaaaaaaaaaaa //
-Dm                         C
-Aaa haaaaaa aaaaa aaaa aaaa aaaa //
-
-[Inter]
--------------------------------------------------------------------------------
-|Dm| + | + | + | //
-|Am| - | - | G |
-|C |Am | C |Am |
-|C | - | - | - |
-
-[Verse 1]
--------------------------------------------------------------------------------
-C
-Don tharikita keththa do don
-C
-Pila watakara keththa do don
-C
-Dama thella dingisi dingoi
-C
-Dama thella thaka theiyath than
-C
-Kewum kokis thele bedei
-C
-Kawili suwanda sithata denei
-F
-Baa baa baa kikili eye ude giya kikili
-F
-Thama awe na kikili baa baa baaaaa
-F                    C           Dm                 C
-Gath thincaaa thinchaa gathi gatha go gati gatha go
-F                C         Dm                  C
-Onchili chili waram gama dewanath wenna
-Eb7               C      Eb7            C
-Mengiri dingo oooo aurudu awo oooo 
-
-[Verse 2]
--------------------------------------------------------------------------------
-C
-Don tharikita keththa do don
-C
-Pila watakara keththa do don
-C
-Dama thella dingisi dingoi
-C
-Dama thella thaka theiyath than
-C
-Kewum kokis thele bedei
-C
-Kawili suwanda sithata denei
-F
-Baa baa baa kikili eye ude giya kikili
-F
-Thama awe na kikili baa baa baaaaa
-F                    C           Dm                 C
-Gath thincaaa thinchaa gathi gatha go gati gatha go
-F                C         Dm                  C
-Onchili chili waram gama dewanath wenna
-Eb7               C      Eb7            C
-Mengiri dingo oooo aurudu awo oooo`;
-
-  // Sample song database (for demo songs when no API is available)
-  const DEMO_SONGS = [
-    { title: "Me Awurudu Kale", artist: "Sinhala New Year Song", isPremium: true, videoId: "demo1", thumbnail: "" },
-    { title: "Despacito", artist: "Luis Fonsi", isPremium: false, videoId: "demo2", thumbnail: "" },
-    { title: "Perfect", artist: "Ed Sheeran", isPremium: false, videoId: "demo3", thumbnail: "" },
-    { title: "Blinding Lights", artist: "The Weeknd", isPremium: false, videoId: "demo4", thumbnail: "" },
-    { title: "Shape of You", artist: "Ed Sheeran", isPremium: false, videoId: "demo5", thumbnail: "" },
-    { title: "Manike Mage Hithe", artist: "Yohani", isPremium: false, videoId: "demo6", thumbnail: "" }
-  ];
-
-  // Function to check if query matches "Me Awurudu Kale" (case insensitive, various spellings)
-  function isMeAwuruduKaleQuery(query) {
-    const normalized = query.toLowerCase().replace(/[^a-z]/g, '');
-    return normalized.includes('meawurudukale') || 
-           normalized.includes('meawurudu') || 
-           (normalized.includes('awurudu') && normalized.includes('kale')) ||
-           normalized.includes('aurudukale');
-  }
-
-  // Search function - uses local demo database to avoid fetch errors
-  // This ensures the page works perfectly without any network fetch issues
-  function searchSongs(query) {
-    if (!query.trim()) return [];
-    
-    const lowerQuery = query.toLowerCase();
-    const results = DEMO_SONGS.filter(song => 
-      song.title.toLowerCase().includes(lowerQuery) || 
-      song.artist.toLowerCase().includes(lowerQuery)
-    );
-    
-    // If no results but query has "awurudu" or "kale", add the premium song
-    if (results.length === 0 && isMeAwuruduKaleQuery(query)) {
-      return [DEMO_SONGS[0]];
-    }
-    
-    // Always show Me Awurudu Kale at top if relevant
-    if (isMeAwuruduKaleQuery(query)) {
-      const premiumSong = DEMO_SONGS[0];
-      const otherResults = results.filter(s => s.title !== "Me Awurudu Kale");
-      return [premiumSong, ...otherResults];
-    }
-    
-    return results;
-  }
-
-  // Render song results
-  function renderSongResults(songs, searchQuery) {
-    if (!songs.length) {
-      songsContainer.innerHTML = `<div class="empty-message"><i class="fas fa-search"></i> No results found for "${escapeHtml(searchQuery)}".<br>💡 Try "Me Awurudu Kale" for premium chords!</div>`;
-      return;
-    }
-    
-    songsContainer.innerHTML = songs.map(song => {
-      const thumbnailHtml = song.thumbnail ? 
-        `<img src="${song.thumbnail}" alt="thumbnail" style="width:100%; height:100%; object-fit:cover;">` : 
-        `<i class="fas fa-music"></i>`;
-      
-      return `
-      <div class="song-card" data-title="${escapeHtml(song.title)}" data-artist="${escapeHtml(song.artist)}" data-premium="${song.isPremium}">
-        <div class="thumbnail-placeholder">
-          ${thumbnailHtml}
+    <!-- Modal for Add Contact -->
+    <div class="modal" id="addContactModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2><i class="fas fa-user-plus"></i> Add New Contact</h2>
+            <form id="addContactForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="contactEmail" placeholder="Enter contact's email" required>
+                </div>
+                <button type="submit" class="btn-primary">Add Contact</button>
+            </form>
         </div>
-        <div class="card-content">
-          <div class="song-title">${escapeHtml(song.title)}</div>
-          <div class="song-channel"><i class="fas fa-user"></i> ${escapeHtml(song.artist)}</div>
-          <div class="chord-badge"><i class="fas fa-chord"></i> ${song.isPremium ? 'Premium Chords Available ✨' : 'View Chords'}</div>
+    </div>
+
+    <!-- Modal for Edit Profile -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2><i class="fas fa-edit"></i> Edit Profile</h2>
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="editDisplayName" placeholder="Your display name" required>
+                </div>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="editBio" placeholder="Tell people about yourself" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <input type="file" id="editProfilePic" accept="image/*">
+                </div>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
         </div>
-      </div>
-    `}).join('');
-    
-    // Add click handlers
-    document.querySelectorAll('.song-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const title = card.dataset.title;
-        const artist = card.dataset.artist;
-        const isPremium = card.dataset.premium === 'true';
-        loadAndDisplayChords(title, artist, isPremium);
-      });
-    });
-  }
-  
-  // Load chords based on song selection
-  async function loadAndDisplayChords(title, artist, isPremium) {
-    chordPanel.style.display = 'block';
-    currentSongTitleSpan.innerText = `${title} - ${artist}`;
-    chordContentDiv.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading chords...</div>';
-    
-    // Simulate slight delay for realism
-    setTimeout(() => {
-      // Check if this is "Me Awurudu Kale" or similar
-      const combinedQuery = `${title} ${artist}`;
-      if (isPremium || isMeAwuruduKaleQuery(title) || isMeAwuruduKaleQuery(combinedQuery)) {
-        currentChordsText = ME_AWURUDU_KALE_CHORDS;
-        chordContentDiv.innerHTML = `
-          <div class="premium-badge">
-            <i class="fas fa-star"></i> Premium Chord Sheet — Exactly as requested for "Me Awurudu Kale"
-          </div>
-          <pre style="font-family: 'Courier New', monospace; margin:0; white-space: pre-wrap;">${escapeHtml(ME_AWURUDU_KALE_CHORDS)}</pre>
-        `;
-      } else {
-        // For other songs, show a message that chords can be added
-        currentChordsText = `[Chord sheet for "${title}" by ${artist}]\n\nThis is a demo song. To add chords:\n1. Visit chords.lk\n2. Search for this song\n3. Copy and paste the chords here\n\nPremium songs like "Me Awurudu Kale" have complete chord sheets!`;
-        chordContentDiv.innerHTML = `
-          <div class="error-message" style="background:#fef3c7; color:#92400e;">
-            <i class="fas fa-info-circle"></i> Demo Mode: Full chords for "${title}" can be added to the database.
-            <br><small>✨ Try searching for <strong>"Me Awurudu Kale"</strong> to see the complete premium chord sheet!</small>
-          </div>
-          <pre style="font-family: 'Courier New', monospace; margin-top:1rem; white-space: pre-wrap;">${escapeHtml(currentChordsText)}</pre>
-        `;
-      }
-    }, 300);
-  }
-  
-  let currentChordsText = "";
-  
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  }
-  
-  // Main search handler - NO EXTERNAL API CALLS to avoid fetch errors
-  function performSearch() {
-    const query = searchInput.value.trim();
-    if (!query) {
-      songsContainer.innerHTML = `<div class="empty-message">🔍 Enter a song name!<br>🔥 <strong>Try "Me Awurudu Kale"</strong> for instant premium chords!</div>`;
-      chordPanel.style.display = 'none';
-      return;
-    }
-    
-    songsContainer.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Searching for "${escapeHtml(query)}"...</div>`;
-    chordPanel.style.display = 'none';
-    
-    // Simulate search delay
-    setTimeout(() => {
-      const results = searchSongs(query);
-      renderSongResults(results, query);
-      
-      // AUTO-DISPLAY CHORDS if searching exactly for "Me Awurudu Kale"
-      if (isMeAwuruduKaleQuery(query)) {
-        setTimeout(() => {
-          loadAndDisplayChords("Me Awurudu Kale", "Sinhala New Year Song", true);
-        }, 500);
-      }
-    }, 400);
-  }
-  
-  // Copy chord text functionality
-  copyChordBtn.addEventListener('click', async () => {
-    if (!currentChordsText) {
-      alert("No chord sheet loaded yet. Please click on a song first.");
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(currentChordsText);
-      const originalText = copyChordBtn.innerHTML;
-      copyChordBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-      setTimeout(() => {
-        copyChordBtn.innerHTML = originalText;
-      }, 2000);
-    } catch (err) {
-      alert("Unable to copy: " + err);
-    }
-  });
-  
-  // Event listeners
-  searchBtn.addEventListener('click', performSearch);
-  searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performSearch();
-  });
-  
-  // Footer link handlers
-  document.getElementById('aboutLink')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    alert("ChordScout — Instant chord sheets for your favorite songs. Premium library includes 'Me Awurudu Kale' with complete chords.");
-  });
-  document.getElementById('chordsGuideLink')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    alert("✨ Premium Feature: 'Me Awurudu Kale' chords are fully embedded. Search the song name to see the complete chord sheet including Intro, Chorus, Verses, and Interlude.");
-  });
-  document.getElementById('contactLink')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    alert("📧 Sahan Lakmina @ SL Tech Studios — For chord requests or collaborations, reach out via social media.");
-  });
-  
-  // Initialize with a welcome message and preload the premium song
-  window.addEventListener('load', () => {
-    // Set default search value to show the premium chords
-    searchInput.value = "Me Awurudu Kale";
-    performSearch();
-  });
-</script>
+    </div>
+
+    <!-- Modal for NIC Verification -->
+    <div class="modal" id="verifyModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close">&times;</span>
+            <h2><i class="fas fa-id-card"></i> Verify Your Identity</h2>
+            <p class="modal-description">Take a live photo of your National Identity Card (NIC) for verification.</p>
+            <div class="verify-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+                <div class="verify-controls">
+                    <button class="btn-camera" id="startCamera"><i class="fas fa-camera"></i> Open Camera</button>
+                    <button class="btn-capture" id="captureBtn" disabled><i class="fas fa-camera-retro"></i> Capture Photo</button>
+                </div>
+                <div id="ocrResult" class="ocr-result">
+                    <h3>Extracted Information</h3>
+                    <div class="ocr-field">
+                        <label>Full Name:</label>
+                        <span id="ocrName">-</span>
+                    </div>
+                    <div class="ocr-field">
+                        <label>NIC Number:</label>
+                        <span id="ocrNic">-</span>
+                    </div>
+                    <div class="ocr-field">
+                        <label>Date of Birth:</label>
+                        <span id="ocrDob">-</span>
+                    </div>
+                    <button class="btn-verify-save" id="saveVerification" disabled>
+                        <i class="fas fa-save"></i> Save Verification
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal for Sending Messages -->
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-modal-header">
+            <button class="btn-back" id="backToChats"><i class="fas fa-arrow-left"></i></button>
+            <div class="chat-user-info">
+                <img src="" alt="User" id="chatUserAvatar">
+                <div>
+                    <h4 id="chatUserName">User Name</h4>
+                    <p id="chatUserStatus">Online</p>
+                </div>
+            </div>
+            <button class="btn-more"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be loaded here -->
+        </div>
+        <div class="chat-input">
+            <button class="btn-attach"><i class="fas fa-paperclip"></i></button>
+            <button class="btn-voice" id="voiceRecordBtn"><i class="fas fa-microphone"></i></button>
+            <input type="text" placeholder="Type a message..." id="messageInput">
+            <button class="btn-send" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <script>
+        // ==================== FIREBASE CONFIG ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaMdPoVqGflbBhWhsuV4L2duqiASIbP64",
+            authDomain: "src-competion-web.firebaseapp.com",
+            projectId: "src-competion-web",
+            storageBucket: "src-competion-web.firebasestorage.app",
+            messagingSenderId: "568183938397",
+            appId: "1:568183938397:web:02d16665d7bd393d505cb4",
+            measurementId: "G-C0YQX47SR5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // ==================== GLOBALS ====================
+        let currentUser = null;
+        let currentChatId = null;
+        let currentContact = null;
+        let cameraStream = null;
+        let messagesUnsubscribe = null;
+        let chatsUnsubscribe = null;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        // ==================== AUTH FUNCTIONS ====================
+        async function loginUser(email, password) {
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                return { success: true, user: userCredential.user };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function registerUser(email, password, displayName) {
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                await db.collection('users').doc(user.uid).set({
+                    email: email,
+                    displayName: displayName || 'User',
+                    bio: 'Hey there! I\'m using VERI-CHAT',
+                    createdAt: new Date().toISOString(),
+                    isVerified: false,
+                    nicData: null,
+                    profilePic: null,
+                    contacts: []
+                });
+                
+                return { success: true, user: user };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function logoutUser() {
+            try {
+                await auth.signOut();
+                return { success: true };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function getUserProfile(uid) {
+            try {
+                const doc = await db.collection('users').doc(uid).get();
+                if (doc.exists) {
+                    return { success: true, data: doc.data() };
+                } else {
+                    return { success: false, error: 'User not found' };
+                }
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function updateUserProfile(uid, data) {
+            try {
+                await db.collection('users').doc(uid).update(data);
+                return { success: true };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function addContact(uid, contactEmail) {
+            try {
+                const usersRef = db.collection('users');
+                const querySnapshot = await usersRef.where('email', '==', contactEmail).get();
+                
+                if (querySnapshot.empty) {
+                    return { success: false, error: 'User not found' };
+                }
+                
+                const contactDoc = querySnapshot.docs[0];
+                const contactId = contactDoc.id;
+                
+                await db.collection('users').doc(uid).update({
+                    contacts: firebase.firestore.FieldValue.arrayUnion(contactId)
+                });
+                
+                return { success: true, contact: { id: contactId, ...contactDoc.data() } };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function getContacts(uid) {
+            try {
+                const userDoc = await db.collection('users').doc(uid).get();
+                
+                if (!userDoc.exists) {
+                    return { success: false, error: 'User not found' };
+                }
+                
+                const userData = userDoc.data();
+                const contactIds = userData.contacts || [];
+                
+                const contacts = [];
+                for (const contactId of contactIds) {
+                    const contactDoc = await db.collection('users').doc(contactId).get();
+                    if (contactDoc.exists) {
+                        contacts.push({ id: contactId, ...contactDoc.data() });
+                    }
+                }
+                
+                return { success: true, contacts };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ==================== OCR FUNCTIONS ====================
+        async function performOCR(imageData) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const mockResults = {
+                        fullName: 'Kumar Sangakkara',
+                        nicNumber: '198512345V',
+                        dob: '1985-12-15'
+                    };
+                    resolve(mockResults);
+                }, 1500);
+            });
+        }
+
+        async function saveVerification(uid, nicData) {
+            try {
+                await db.collection('users').doc(uid).update({
+                    isVerified: true,
+                    nicData: nicData
+                });
+                return { success: true };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ==================== CHAT FUNCTIONS ====================
+        async function sendMessage(chatId, senderId, receiverId, message, type = 'text') {
+            try {
+                const newMessage = {
+                    chatId: chatId,
+                    senderId: senderId,
+                    receiverId: receiverId,
+                    message: message,
+                    type: type,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    read: false
+                };
+                
+                const docRef = await db.collection('messages').add(newMessage);
+                
+                await db.collection('chats').doc(chatId).update({
+                    lastMessage: message,
+                    lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastSenderId: senderId
+                });
+                
+                return { success: true, id: docRef.id };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        function listenToMessages(chatId, callback) {
+            return db.collection('messages')
+                .where('chatId', '==', chatId)
+                .orderBy('timestamp', 'asc')
+                .onSnapshot((snapshot) => {
+                    const messages = [];
+                    snapshot.forEach((doc) => {
+                        messages.push({ id: doc.id, ...doc.data() });
+                    });
+                    callback(messages);
+                }, (error) => {
+                    console.error('Error listening to messages:', error);
+                });
+        }
+
+        function listenToUserChats(userId, callback) {
+            return db.collection('chats')
+                .where('participants', 'array-contains', userId)
+                .onSnapshot(async (snapshot) => {
+                    const chats = [];
+                    for (const doc of snapshot.docs) {
+                        const chatData = doc.data();
+                        const otherParticipantId = chatData.participants.find(id => id !== userId);
+                        if (otherParticipantId) {
+                            const userDoc = await db.collection('users').doc(otherParticipantId).get();
+                            if (userDoc.exists) {
+                                chatData.otherUser = { id: otherParticipantId, ...userDoc.data() };
+                            }
+                        }
+                        chats.push({ id: doc.id, ...chatData });
+                    }
+                    callback(chats);
+                }, (error) => {
+                    console.error('Error listening to chats:', error);
+                });
+        }
+
+        async function createChat(userId, otherUserId) {
+            try {
+                const chatsRef = db.collection('chats');
+                const querySnapshot = await chatsRef.where('participants', 'array-contains', userId).get();
+                
+                for (const doc of querySnapshot.docs) {
+                    const data = doc.data();
+                    if (data.participants.includes(otherUserId)) {
+                        return { success: true, chatId: doc.id, existing: true };
+                    }
+                }
+                
+                const newChat = {
+                    participants: [userId, otherUserId],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastMessage: '',
+                    lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                const docRef = await chatsRef.add(newChat);
+                return { success: true, chatId: docRef.id, existing: false };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ==================== UI FUNCTIONS ====================
+        function showLogin() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('registerPage').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.remove('hidden');
+        }
+
+        function switchPage(page) {
+            document.querySelectorAll('.page-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            document.getElementById(page + 'Container').classList.add('active');
+            
+            if (page === 'chat') {
+                loadChats();
+            } else if (page === 'contacts') {
+                loadContacts();
+            } else if (page === 'profile') {
+                loadProfile();
+            }
+        }
+
+        async function loadProfile() {
+            if (!currentUser) return;
+            
+            const result = await getUserProfile(currentUser.uid);
+            if (result.success) {
+                const data = result.data;
+                
+                document.getElementById('profileName').textContent = data.displayName || 'User';
+                document.getElementById('profileEmail').textContent = data.email;
+                document.getElementById('profileBio').textContent = data.bio || 'No bio set';
+                
+                if (data.profilePic) {
+                    document.getElementById('profileImage').src = data.profilePic;
+                    document.getElementById('profileImage').style.display = 'block';
+                } else {
+                    document.getElementById('profileImage').style.display = 'none';
+                }
+                
+                if (data.isVerified && data.nicData) {
+                    document.getElementById('profileNic').textContent = data.nicData.nicNumber || 'Not provided';
+                    document.getElementById('profileFullName').textContent = data.nicData.fullName || 'Not verified';
+                    
+                    const badge = document.getElementById('verificationBadge');
+                    badge.classList.add('verified');
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verified</span>';
+                } else {
+                    document.getElementById('profileNic').textContent = 'Not verified';
+                    document.getElementById('profileFullName').textContent = 'Not verified';
+                    
+                    const badge = document.getElementById('verificationBadge');
+                    badge.classList.remove('verified');
+                    badge.innerHTML = '<i class="fas fa-times-circle"></i> <span>Not Verified</span>';
+                }
+            }
+        }
+
+        function loadChats() {
+            if (!currentUser) return;
+            
+            if (chatsUnsubscribe) {
+                chatsUnsubscribe();
+            }
+            
+            chatsUnsubscribe = listenToUserChats(currentUser.uid, (chats) => {
+                const chatList = document.getElementById('chatList');
+                chatList.innerHTML = '';
+                
+                if (chats.length === 0) {
+                    chatList.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                            <i class="fas fa-comments" style="font-size: 32px; margin-bottom: 12px;"></i>
+                            <p>No chats yet. Start a new conversation!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                chats.forEach(chat => {
+                    const otherUser = chat.otherUser || { displayName: 'Unknown', isVerified: false };
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'chat-item';
+                    chatItem.dataset.chatId = chat.id;
+                    chatItem.dataset.userId = otherUser.id;
+                    
+                    const initial = (otherUser.displayName || 'U')[0].toUpperCase();
+                    const isVerified = otherUser.isVerified;
+                    
+                    chatItem.innerHTML = `
+                        <div class="chat-item-avatar" style="${isVerified ? 'background: linear-gradient(135deg, #2DD4BF, #0891B2);' : 'background: linear-gradient(135deg, #FBBF24, #F59E0B);'}">
+                            ${initial}
+                            ${isVerified ? '<i class="fas fa-check-circle" style="position: absolute; bottom: -2px; right: -2px; font-size: 14px; color: #2DD4BF; background: var(--primary); border-radius: 50%; padding: 2px;"></i>' : ''}
+                        </div>
+                        <div class="chat-item-info">
+                            <div class="chat-item-name">${otherUser.displayName || 'Unknown User'}</div>
+                            <div class="chat-item-last">${chat.lastMessage || 'No messages'}</div>
+                        </div>
+                        <div class="chat-item-time">${chat.lastMessageTime ? new Date(chat.lastMessageTime.seconds * 1000).toLocaleTimeString() : ''}</div>
+                    `;
+                    
+                    chatItem.addEventListener('click', () => {
+                        openChat(chat.id, otherUser);
+                    });
+                    
+                    chatList.appendChild(chatItem);
+                });
+            });
+        }
+
+        async function loadContacts() {
+            if (!currentUser) return;
+            
+            const result = await getContacts(currentUser.uid);
+            const contactsList = document.getElementById('contactsList');
+            contactsList.innerHTML = '';
+            
+            if (!result.success || result.contacts.length === 0) {
+                contactsList.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                        <i class="fas fa-address-book" style="font-size: 32px; margin-bottom: 12px;"></i>
+                        <p>No contacts yet. Add your friends!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            result.contacts.forEach(contact => {
+                const contactItem = document.createElement('div');
+                contactItem.className = 'contact-item';
+                
+                const initial = (contact.displayName || 'U')[0].toUpperCase();
+                const isVerified = contact.isVerified;
+                
+                contactItem.innerHTML = `
+                    <div class="contact-avatar" style="${isVerified ? 'background: linear-gradient(135deg, #2DD4BF, #0891B2);' : 'background: linear-gradient(135deg, #FBBF24, #F59E0B);'}">
+                        ${initial}
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.displayName || 'Unknown User'}</div>
+                        <div class="contact-email">${contact.email || 'No email'}</div>
+                        ${isVerified ? '<div class="contact-verified"><i class="fas fa-check-circle"></i> Verified</div>' : ''}
+                    </div>
+                    <button class="btn-chat" data-contact-id="${contact.id}">
+                        <i class="fas fa-comment"></i> Chat
+                    </button>
+                `;
+                
+                const chatBtn = contactItem.querySelector('.btn-chat');
+                chatBtn.addEventListener('click', () => {
+                    startChatWith(contact.id);
+                });
+                
+                contactsList.appendChild(contactItem);
+            });
+        }
+
+        function openChat(chatId, otherUser) {
+            currentChatId = chatId;
+            currentContact = otherUser;
+            
+            const chatModal = document.getElementById('chatModal');
+            chatModal.classList.add('show');
+            
+            document.getElementById('chatUserName').textContent = otherUser.displayName || 'Unknown User';
+            document.getElementById('chatUserStatus').textContent = otherUser.isVerified ? '✅ Verified' : '⚠️ Not Verified';
+            
+            if (otherUser.profilePic) {
+                document.getElementById('chatUserAvatar').src = otherUser.profilePic;
+                document.getElementById('chatUserAvatar').style.display = 'block';
+            } else {
+                document.getElementById('chatUserAvatar').style.display = 'none';
+            }
+            
+            if (messagesUnsubscribe) {
+                messagesUnsubscribe();
+            }
+            
+            messagesUnsubscribe = listenToMessages(chatId, (messages) => {
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.innerHTML = '';
+                
+                if (messages.length === 0) {
+                    messagesContainer.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                            <p>No messages yet. Say hello!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.senderId === currentUser.uid ? 'sent' : 'received'}`;
+                    
+                    let content = msg.message;
+                    if (msg.type === 'voice') {
+                        content = '🎤 Voice message';
+                    }
+                    
+                    const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString() : '';
+                    
+                    messageDiv.innerHTML = `
+                        ${content}
+                        <span class="message-time">${time}</span>
+                    `;
+                    
+                    messagesContainer.appendChild(messageDiv);
+                });
+                
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+
+        async function startChatWith(contactId) {
+            const result = await createChat(currentUser.uid, contactId);
+            if (result.success) {
+                const userDoc = await db.collection('users').doc(contactId).get();
+                if (userDoc.exists) {
+                    openChat(result.chatId, { id: contactId, ...userDoc.data() });
+                }
+            }
+        }
+
+        async function sendMessageHandler() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentChatId || !currentContact) return;
+            
+            const result = await sendMessage(
+                currentChatId,
+                currentUser.uid,
+                currentContact.id,
+                message,
+                'text'
+            );
+            
+            if (result.success) {
+                input.value = '';
+            } else {
+                alert('Error sending message: ' + result.error);
+            }
+        }
+
+        // ==================== VOICE RECORDING ====================
+        async function startVoiceRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    if (audioBlob.size > 0 && currentChatId && currentContact) {
+                        const reader = new FileReader();
+                        reader.onload = async (e) => {
+                            const audioData = e.target.result;
+                            await sendMessage(
+                                currentChatId,
+                                currentUser.uid,
+                                currentContact.id,
+                                audioData,
+                                'voice'
+                            );
+                        };
+                        reader.readAsDataURL(audioBlob);
+                    }
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('voiceRecordBtn').innerHTML = '<i class="fas fa-stop-circle" style="color: #EF4444;"></i>';
+                document.getElementById('voiceRecordBtn').style.color = '#EF4444';
+            } catch (error) {
+                alert('Error accessing microphone: ' + error.message);
+            }
+        }
+
+        function stopVoiceRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                document.getElementById('voiceRecordBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+                document.getElementById('voiceRecordBtn').style.color = '';
+            }
+        }
+
+        // ==================== CAMERA FUNCTIONS ====================
+        async function startCamera() {
+            try {
+                const video = document.getElementById('video');
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = cameraStream;
+                await video.play();
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('startCamera').disabled = true;
+            } catch (error) {
+                alert('Error accessing camera: ' + error.message);
+            }
+        }
+
+        async function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            document.getElementById('saveVerification').disabled = true;
+            document.getElementById('saveVerification').textContent = 'Processing...';
+            
+            try {
+                const ocrResult = await performOCR(imageData);
+                
+                document.getElementById('ocrName').textContent = ocrResult.fullName || 'Not found';
+                document.getElementById('ocrNic').textContent = ocrResult.nicNumber || 'Not found';
+                document.getElementById('ocrDob').textContent = ocrResult.dob || 'Not found';
+                
+                document.getElementById('saveVerification').disabled = false;
+                document.getElementById('saveVerification').dataset.ocrData = JSON.stringify(ocrResult);
+                
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    cameraStream = null;
+                }
+                document.getElementById('startCamera').disabled = false;
+                document.getElementById('captureBtn').disabled = true;
+            } catch (error) {
+                alert('Error processing image: ' + error.message);
+            }
+        }
+
+        async function saveVerificationData() {
+            const button = document.getElementById('saveVerification');
+            const ocrData = JSON.parse(button.dataset.ocrData || '{}');
+            
+            if (!ocrData.fullName || !ocrData.nicNumber) {
+                alert('Please capture a valid NIC image first.');
+                return;
+            }
+            
+            const result = await saveVerification(currentUser.uid, ocrData);
+            if (result.success) {
+                alert('Verification successful! Your identity has been verified.');
+                document.getElementById('verifyModal').classList.remove('show');
+                loadProfile();
+            } else {
+                alert('Error saving verification: ' + result.error);
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auth listeners
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                const result = await loginUser(email, password);
+                if (result.success) {
+                    document.getElementById('authPages').classList.remove('show');
+                    document.getElementById('mainApp').classList.add('show');
+                    currentUser = result.user;
+                    loadProfile();
+                    loadChats();
+                    loadContacts();
+                } else {
+                    alert('Login failed: ' + result.error);
+                }
+            });
+
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const displayName = document.getElementById('registerDisplayName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                
+                const result = await registerUser(email, password, displayName);
+                if (result.success) {
+                    alert('Registration successful! Please login.');
+                    showLogin();
+                } else {
+                    alert('Registration failed: ' + result.error);
+                }
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.dataset.page;
+                    switchPage(page);
+                    
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('navLinks').classList.remove('active');
+                    }
+                });
+            });
+
+            document.getElementById('navToggle').addEventListener('click', () => {
+                document.getElementById('navLinks').classList.toggle('active');
+            });
+
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    const result = await logoutUser();
+                    if (result.success) {
+                        document.getElementById('authPages').classList.add('show');
+                        document.getElementById('mainApp').classList.remove('show');
+                        document.getElementById('loginPage').classList.remove('hidden');
+                        document.getElementById('registerPage').classList.add('hidden');
+                        currentUser = null;
+                        if (chatsUnsubscribe) {
+                            chatsUnsubscribe();
+                            chatsUnsubscribe = null;
+                        }
+                        if (messagesUnsubscribe) {
+                            messagesUnsubscribe();
+                            messagesUnsubscribe = null;
+                        }
+                    } else {
+                        alert('Error logging out: ' + result.error);
+                    }
+                }
+            });
+
+            // Profile
+            document.getElementById('editProfileBtn').addEventListener('click', () => {
+                document.getElementById('editProfileModal').classList.add('show');
+                getUserProfile(currentUser.uid).then(result => {
+                    if (result.success) {
+                        document.getElementById('editDisplayName').value = result.data.displayName || '';
+                        document.getElementById('editBio').value = result.data.bio || '';
+                    }
+                });
+            });
+
+            document.getElementById('verifyIdentityBtn').addEventListener('click', () => {
+                document.getElementById('verifyModal').classList.add('show');
+                document.getElementById('ocrName').textContent = '-';
+                document.getElementById('ocrNic').textContent = '-';
+                document.getElementById('ocrDob').textContent = '-';
+                document.getElementById('saveVerification').disabled = true;
+                document.getElementById('saveVerification').textContent = 'Save Verification';
+            });
+
+            document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const displayName = document.getElementById('editDisplayName').value;
+                const bio = document.getElementById('editBio').value;
+                const file = document.getElementById('editProfilePic').files[0];
+                
+                let updateData = { displayName, bio };
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        updateData.profilePic = e.target.result;
+                        const result = await updateUserProfile(currentUser.uid, updateData);
+                        if (result.success) {
+                            alert('Profile updated successfully!');
+                            document.getElementById('editProfileModal').classList.remove('show');
+                            loadProfile();
+                        } else {
+                            alert('Error: ' + result.error);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    const result = await updateUserProfile(currentUser.uid, updateData);
+                    if (result.success) {
+                        alert('Profile updated successfully!');
+                        document.getElementById('editProfileModal').classList.remove('show');
+                        loadProfile();
+                    } else {
+                        alert('Error: ' + result.error);
+                    }
+                }
+            });
+
+            // Contacts
+            document.getElementById('addContactBtn').addEventListener('click', () => {
+                document.getElementById('addContactModal').classList.add('show');
+            });
+
+            document.getElementById('addContactForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('contactEmail').value;
+                const result = await addContact(currentUser.uid, email);
+                if (result.success) {
+                    alert('Contact added successfully!');
+                    document.getElementById('addContactModal').classList.remove('show');
+                    loadContacts();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            });
+
+            // Camera
+            document.getElementById('startCamera').addEventListener('click', startCamera);
+            document.getElementById('captureBtn').addEventListener('click', capturePhoto);
+            document.getElementById('saveVerification').addEventListener('click', saveVerificationData);
+
+            // Close modals
+            document.querySelectorAll('.modal-close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', () => {
+                    closeBtn.closest('.modal').classList.remove('show');
+                });
+            });
+
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                    }
+                });
+            });
+
+            // Chat
+            document.getElementById('sendMessageBtn').addEventListener('click', sendMessageHandler);
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessageHandler();
+                }
+            });
+
+            document.getElementById('backToChats').addEventListener('click', () => {
+                document.getElementById('chatModal').classList.remove('show');
+                if (messagesUnsubscribe) {
+                    messagesUnsubscribe();
+                    messagesUnsubscribe = null;
+                }
+            });
+
+            // Voice recording
+            document.getElementById('voiceRecordBtn').addEventListener('click', () => {
+                if (isRecording) {
+                    stopVoiceRecording();
+                } else {
+                    startVoiceRecording();
+                }
+            });
+
+            // Auth state
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('authPages').classList.remove('show');
+                    document.getElementById('mainApp').classList.add('show');
+                    loadProfile();
+                    loadChats();
+                    loadContacts();
+                } else {
+                    document.getElementById('authPages').classList.add('show');
+                    document.getElementById('mainApp').classList.remove('show');
+                    document.getElementById('loginPage').classList.remove('hidden');
+                    document.getElementById('registerPage').classList.add('hidden');
+                    currentUser = null;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
-```
