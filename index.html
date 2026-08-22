@@ -32,14 +32,14 @@
             flex-direction: column;
             background: #0b141a;
         }
-        /* Registration Page */
-        #registerPage {
+        /* Auth Pages (Login & Register) */
+        #authPage {
             justify-content: center;
             align-items: center;
             background: linear-gradient(145deg, #0b141a 0%, #1a2a33 100%);
             padding: 20px;
         }
-        .register-box {
+        .auth-box {
             background: #1f2c33;
             padding: 40px 32px;
             border-radius: 32px;
@@ -48,19 +48,19 @@
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
             border: 1px solid #2a3942;
         }
-        .register-box h1 {
+        .auth-box h1 {
             font-size: 28px;
             margin-bottom: 8px;
             color: #fff;
             font-weight: 600;
             letter-spacing: -0.5px;
         }
-        .register-box p.sub {
+        .auth-box p.sub {
             color: #8696a0;
             font-size: 14px;
             margin-bottom: 28px;
         }
-        .register-box input {
+        .auth-box input {
             width: 100%;
             padding: 14px 16px;
             margin-bottom: 16px;
@@ -72,11 +72,11 @@
             transition: all 0.2s;
             outline: none;
         }
-        .register-box input:focus {
+        .auth-box input:focus {
             border-color: #00a884;
             box-shadow: 0 0 0 3px rgba(0,168,132,0.2);
         }
-        .register-box input::placeholder { color: #8696a0; }
+        .auth-box input::placeholder { color: #8696a0; }
         .btn-primary {
             width: 100%;
             padding: 14px;
@@ -97,6 +97,29 @@
             font-size: 13px;
             margin-top: 10px;
             text-align: center;
+        }
+        .auth-switch {
+            margin-top: 20px;
+            text-align: center;
+            color: #8696a0;
+            font-size: 14px;
+        }
+        .auth-switch a {
+            color: #00a884;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .auth-switch a:hover { text-decoration: underline; }
+        /* Admin Badge */
+        .admin-badge {
+            background: #ffd700;
+            color: #0b141a;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
         }
         /* NIC Capture Page */
         #nicPage {
@@ -221,6 +244,14 @@
             gap: 12px;
         }
         .chat-header .user-info .name { font-weight: 500; font-size: 14px; }
+        .chat-header .user-info .role-badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .role-badge.admin { background: #ffd700; color: #0b141a; }
+        .role-badge.user { background: #2a3942; color: #8696a0; }
         .btn-logout {
             background: #2a3942;
             border: none;
@@ -382,6 +413,7 @@
             transition: 0.2s;
         }
         .chat-input-area button:hover { background: #00c49a; }
+        .chat-input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
         .empty-chat {
             flex: 1;
             display: flex;
@@ -432,27 +464,74 @@
         .modal-actions .btn-confirm:hover { background: #00c49a; }
         .modal-actions .btn-cancel { background: #2a3942; color: #fff; }
         .modal-actions .btn-cancel:hover { background: #3b4a54; }
+        /* Admin Panel */
+        .admin-panel {
+            background: #1f2c33;
+            padding: 16px 20px;
+            border-bottom: 1px solid #2a3942;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .admin-panel .admin-title {
+            color: #ffd700;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .admin-panel button {
+            padding: 6px 14px;
+            background: #2a3942;
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .admin-panel button:hover { background: #3b4a54; }
+        .admin-panel .stats {
+            color: #8696a0;
+            font-size: 12px;
+            margin-left: auto;
+        }
         /* Responsive */
         @media (max-width: 640px) {
             .contacts-sidebar { width: 100%; border-right: none; }
             .chat-layout { flex-direction: column; }
             .chat-area { height: 100%; }
-            .register-box { padding: 28px 20px; }
+            .auth-box { padding: 28px 20px; }
             .nic-container { padding: 16px; }
+            .admin-panel { flex-direction: column; align-items: stretch; }
+            .admin-panel .stats { margin-left: 0; }
         }
     </style>
 </head>
 <body>
 
-<!-- ===== REGISTER PAGE ===== -->
-<div id="registerPage" class="page">
-    <div class="register-box">
-        <h1>Welcome 👋</h1>
-        <p class="sub">Create your account to start messaging</p>
-        <input type="email" id="regEmail" placeholder="Email address" />
-        <input type="password" id="regPassword" placeholder="Password (min 6 chars)" />
-        <button class="btn-primary" id="registerBtn">Register</button>
-        <div id="regError" class="error-msg"></div>
+<!-- ===== AUTH PAGE (Login & Register) ===== -->
+<div id="authPage" class="page">
+    <div class="auth-box">
+        <h1 id="authTitle">Welcome Back 👋</h1>
+        <p class="sub" id="authSub">Login to continue messaging</p>
+        
+        <input type="email" id="authEmail" placeholder="Email address" />
+        <input type="password" id="authPassword" placeholder="Password" />
+        
+        <button class="btn-primary" id="authBtn">Login</button>
+        <div id="authError" class="error-msg"></div>
+        
+        <div class="auth-switch">
+            <span id="authSwitchText">Don't have an account?</span>
+            <a id="authSwitchLink">Register</a>
+        </div>
+        
+        <!-- Admin demo credentials hint -->
+        <div style="margin-top: 20px; padding: 12px; background: #1a2a33; border-radius: 12px; font-size: 12px; color: #8696a0;">
+            <div style="color: #ffd700; font-weight: 600; margin-bottom: 4px;">👑 Admin Demo Accounts</div>
+            <div>admin1@chatapp.com / admin123</div>
+            <div>admin2@chatapp.com / admin123</div>
+        </div>
     </div>
 </div>
 
@@ -477,9 +556,19 @@
         <div class="brand">💬 Chat<span>App</span></div>
         <div class="user-info">
             <span class="name" id="currentUserName">User</span>
+            <span class="role-badge" id="roleBadge">User</span>
             <button class="btn-logout" id="logoutBtn">Logout</button>
         </div>
     </div>
+    
+    <!-- Admin Panel (only visible to admins) -->
+    <div id="adminPanel" class="admin-panel hidden">
+        <span class="admin-title">👑 Admin Panel</span>
+        <button onclick="adminBroadcast()">📢 Broadcast Message</button>
+        <button onclick="adminViewUsers()">👥 View All Users</button>
+        <span class="stats" id="adminStats">Users: 0</span>
+    </div>
+    
     <div class="chat-layout">
         <!-- Contacts Sidebar -->
         <div class="contacts-sidebar">
@@ -540,30 +629,47 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 
 // ============================================================
+// ADMIN ACCOUNTS
+// ============================================================
+const ADMIN_ACCOUNTS = [
+    { email: 'admin1@chatapp.com', password: 'admin123', name: 'Admin One' },
+    { email: 'admin2@chatapp.com', password: 'admin123', name: 'Admin Two' }
+];
+
+// ============================================================
 // APP STATE
 // ============================================================
-let currentUser = null;          // firebase auth user
-let currentUserData = null;     // { uid, name, email, nicNumber, contacts: [] }
-let currentChatWith = null;     // email of the contact we're chatting with
-let contacts = [];              // array of { name, email, uid? }
-let allUsersCache = {};         // cache user data by email
+let currentUser = null;
+let currentUserData = null;
+let currentChatWith = null;
+let contacts = [];
+let allUsersCache = {};
 let unsubscribeMessages = null;
 let mediaStream = null;
+let isAdmin = false;
+let isLoginMode = true;
 
 // DOM refs
 const $ = id => document.getElementById(id);
-const regPage = $('registerPage');
+const authPage = $('authPage');
 const nicPage = $('nicPage');
 const chatPage = $('chatPage');
-const regEmail = $('regEmail');
-const regPassword = $('regPassword');
-const registerBtn = $('registerBtn');
-const regError = $('regError');
+const authTitle = $('authTitle');
+const authSub = $('authSub');
+const authEmail = $('authEmail');
+const authPassword = $('authPassword');
+const authBtn = $('authBtn');
+const authError = $('authError');
+const authSwitchText = $('authSwitchText');
+const authSwitchLink = $('authSwitchLink');
 const video = $('videoPreview');
 const captureBtn = $('captureBtn');
 const retryCamBtn = $('retryCamBtn');
 const nicStatus = $('nicStatus');
 const currentUserName = $('currentUserName');
+const roleBadge = $('roleBadge');
+const adminPanel = $('adminPanel');
+const adminStats = $('adminStats');
 const logoutBtn = $('logoutBtn');
 const contactsList = $('contactsList');
 const chatMessages = $('chatMessages');
@@ -582,52 +688,79 @@ const addContactError = $('addContactError');
 // NAVIGATION
 // ============================================================
 function showPage(pageId) {
-    [regPage, nicPage, chatPage].forEach(p => p.classList.add('hidden'));
+    [authPage, nicPage, chatPage].forEach(p => p.classList.add('hidden'));
     $(pageId).classList.remove('hidden');
 }
 
 // ============================================================
-// AUTH: REGISTRATION
+// AUTH: LOGIN / REGISTER TOGGLE
 // ============================================================
-registerBtn.addEventListener('click', async () => {
-    const email = regEmail.value.trim();
-    const password = regPassword.value;
-    regError.textContent = '';
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    if (isLoginMode) {
+        authTitle.textContent = 'Welcome Back 👋';
+        authSub.textContent = 'Login to continue messaging';
+        authBtn.textContent = 'Login';
+        authSwitchText.textContent = "Don't have an account?";
+        authSwitchLink.textContent = 'Register';
+        authError.textContent = '';
+    } else {
+        authTitle.textContent = 'Create Account 📝';
+        authSub.textContent = 'Sign up to start messaging';
+        authBtn.textContent = 'Register';
+        authSwitchText.textContent = "Already have an account?";
+        authSwitchLink.textContent = 'Login';
+        authError.textContent = '';
+    }
+}
+
+authSwitchLink.addEventListener('click', toggleAuthMode);
+
+// ============================================================
+// AUTH: LOGIN / REGISTER
+// ============================================================
+authBtn.addEventListener('click', async () => {
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    authError.textContent = '';
 
     if (!email || !password) {
-        regError.textContent = 'Please fill in all fields.';
+        authError.textContent = 'Please fill in all fields.';
         return;
     }
-    if (password.length < 6) {
-        regError.textContent = 'Password must be at least 6 characters.';
+    if (!isLoginMode && password.length < 6) {
+        authError.textContent = 'Password must be at least 6 characters.';
         return;
     }
 
-    registerBtn.disabled = true;
-    registerBtn.textContent = 'Creating...';
+    authBtn.disabled = true;
+    authBtn.textContent = isLoginMode ? 'Logging in...' : 'Creating...';
 
     try {
-        const cred = await auth.createUserWithEmailAndPassword(email, password);
-        currentUser = cred.user;
+        let userCredential;
+        if (isLoginMode) {
+            userCredential = await auth.signInWithEmailAndPassword(email, password);
+        } else {
+            userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            // Create user document
+            await db.collection('users').doc(userCredential.user.uid).set({
+                email: email,
+                name: email.split('@')[0],
+                nicNumber: '',
+                contacts: [],
+                isAdmin: ADMIN_ACCOUNTS.some(a => a.email === email),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
         
-        // Store user email in Firestore
-        await db.collection('users').doc(currentUser.uid).set({
-            email: email,
-            name: email.split('@')[0],
-            nicNumber: '',
-            contacts: [],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        currentUser = userCredential.user;
+        authBtn.disabled = false;
+        authBtn.textContent = isLoginMode ? 'Login' : 'Register';
         
-        // Move to NIC capture
-        showPage('nicPage');
-        startCamera();
-        registerBtn.disabled = false;
-        registerBtn.textContent = 'Register';
     } catch (err) {
-        regError.textContent = err.message;
-        registerBtn.disabled = false;
-        registerBtn.textContent = 'Register';
+        authError.textContent = err.message;
+        authBtn.disabled = false;
+        authBtn.textContent = isLoginMode ? 'Login' : 'Register';
     }
 });
 
@@ -658,7 +791,6 @@ captureBtn.addEventListener('click', async () => {
     captureBtn.disabled = true;
     nicStatus.innerHTML = '<span class="spinner"></span> Capturing...';
 
-    // Capture image from video
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth || 1280;
     canvas.height = video.videoHeight || 720;
@@ -669,7 +801,6 @@ captureBtn.addEventListener('click', async () => {
     try {
         nicStatus.innerHTML = '<span class="spinner"></span> Reading NIC details with OCR...';
         
-        // Perform OCR using Tesseract.js
         const result = await Tesseract.recognize(imageDataUrl, 'eng', {
             logger: m => {
                 if (m.status === 'recognizing text') {
@@ -679,24 +810,18 @@ captureBtn.addEventListener('click', async () => {
         });
         
         const text = result.data.text;
-        console.log('OCR Text:', text);
-        
-        // Parse NIC details (Sri Lankan NIC format)
         const nicData = parseNICDetails(text);
         
         if (nicData.nicNumber || nicData.fullName) {
-            // Save to Firestore
             await db.collection('users').doc(currentUser.uid).update({
                 nicNumber: nicData.nicNumber || '',
                 name: nicData.fullName || currentUserData?.name || currentUser.email.split('@')[0],
                 nicDetails: nicData
             });
             
-            // Update local user data
             currentUserData = await getUserData(currentUser.uid);
             nicStatus.innerHTML = `✅ NIC captured! Found: ${nicData.fullName || 'Name'} (${nicData.nicNumber || 'N/A'})`;
             
-            // Move to chat after short delay
             setTimeout(() => {
                 showPage('chatPage');
                 loadChat();
@@ -713,7 +838,6 @@ captureBtn.addEventListener('click', async () => {
     }
 });
 
-// Parse Sri Lankan NIC details from OCR text
 function parseNICDetails(text) {
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     let nicNumber = '';
@@ -721,7 +845,6 @@ function parseNICDetails(text) {
     let birthYear = '';
     let gender = '';
     
-    // Find NIC number (10 digits + optional V or X)
     const nicRegex = /(\d{9}[VvXx]|\d{12})/;
     for (const line of lines) {
         const match = line.match(nicRegex);
@@ -731,17 +854,14 @@ function parseNICDetails(text) {
         }
     }
     
-    // Try to find name (usually follows NIC number or appears in lines with multiple words)
     if (nicNumber) {
         const nicIndex = text.indexOf(nicNumber);
         if (nicIndex !== -1) {
             const afterNic = text.substring(nicIndex + nicNumber.length);
             const linesAfter = afterNic.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             for (const line of linesAfter) {
-                // Look for a line with 2-4 words that could be a name
                 const words = line.split(/\s+/);
                 if (words.length >= 2 && words.length <= 5 && line.length < 100) {
-                    // Check if it looks like a name (not containing numbers)
                     if (!/\d/.test(line) && line.length > 5) {
                         fullName = line;
                         break;
@@ -751,7 +871,6 @@ function parseNICDetails(text) {
         }
     }
     
-    // If no name found, try to find it from the text
     if (!fullName) {
         for (const line of lines) {
             const words = line.split(/\s+/);
@@ -762,7 +881,6 @@ function parseNICDetails(text) {
         }
     }
     
-    // Determine gender from NIC number (if 10 digits with V/X)
     if (nicNumber.length === 10) {
         const digits = nicNumber.substring(0, 9);
         const day = parseInt(digits.substring(2, 5));
@@ -771,7 +889,6 @@ function parseNICDetails(text) {
         } else {
             gender = 'Male';
         }
-        // Extract birth year
         const yearPrefix = parseInt(digits.substring(0, 2));
         birthYear = (yearPrefix >= 24 ? '19' : '20') + String(yearPrefix).padStart(2, '0');
     }
@@ -781,7 +898,7 @@ function parseNICDetails(text) {
         fullName: fullName || 'User',
         birthYear: birthYear,
         gender: gender,
-        rawText: text.substring(0, 500) // Store first 500 chars for reference
+        rawText: text.substring(0, 500)
     };
 }
 
@@ -802,17 +919,27 @@ async function getUserData(uid) {
 async function loadChat() {
     if (!currentUser) return;
     
-    // Get current user data
     currentUserData = await getUserData(currentUser.uid);
     if (!currentUserData) return;
     
-    currentUserName.textContent = currentUserData.name || currentUser.email.split('@')[0];
+    // Check if admin
+    isAdmin = currentUserData.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === currentUser.email);
     
-    // Load contacts
+    // Update UI
+    currentUserName.textContent = currentUserData.name || currentUser.email.split('@')[0];
+    roleBadge.textContent = isAdmin ? 'Admin' : 'User';
+    roleBadge.className = `role-badge ${isAdmin ? 'admin' : 'user'}`;
+    
+    if (isAdmin) {
+        adminPanel.classList.remove('hidden');
+        updateAdminStats();
+    } else {
+        adminPanel.classList.add('hidden');
+    }
+    
     contacts = currentUserData.contacts || [];
     renderContacts();
     
-    // Load messages for current chat
     if (currentChatWith) {
         loadMessages(currentChatWith);
     }
@@ -852,26 +979,23 @@ function renderContacts() {
     `).join('');
 }
 
-// Make selectContact globally accessible
 window.selectContact = function(email) {
     currentChatWith = email;
     renderContacts();
     loadMessages(email);
+    // Enable send button
+    sendBtn.disabled = false;
 };
 
 async function loadMessages(contactEmail) {
-    // Clear existing messages listener
     if (unsubscribeMessages) {
         unsubscribeMessages();
         unsubscribeMessages = null;
     }
     
     const chatId = getChatId(currentUser.email, contactEmail);
-    
-    // Show loading state
     chatMessages.innerHTML = '<div class="empty-chat"><span>⏳</span> Loading messages...</div>';
     
-    // Listen for new messages
     unsubscribeMessages = db.collection('chats')
         .doc(chatId)
         .collection('messages')
@@ -903,13 +1027,11 @@ async function loadMessages(contactEmail) {
             chatMessages.innerHTML = messagesHTML;
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
-            // Update last message in contact list
             if (snapshot.docs.length > 0) {
                 const lastMsg = snapshot.docs[snapshot.docs.length - 1].data();
                 const contact = contacts.find(c => c.email === contactEmail);
                 if (contact) {
                     contact.lastMessage = lastMsg.text;
-                    // Update in Firestore
                     updateContactLastMessage(contactEmail, lastMsg.text);
                 }
             }
@@ -950,12 +1072,8 @@ async function sendMessage() {
     if (!text || !currentChatWith || !currentUser) return;
     
     const chatId = getChatId(currentUser.email, currentChatWith);
-    
-    // Get contact name
     const contact = contacts.find(c => c.email === currentChatWith);
     const contactName = contact ? contact.name : currentChatWith;
-    
-    // Get sender name
     const senderName = currentUserData?.name || currentUser.email.split('@')[0];
     
     try {
@@ -1005,13 +1123,11 @@ confirmAddContact.addEventListener('click', async () => {
         return;
     }
     
-    // Check if contact already exists
     if (contacts.some(c => c.email === email)) {
         addContactError.textContent = 'This contact is already in your list.';
         return;
     }
     
-    // Check if user exists in Firestore
     try {
         const usersSnapshot = await db.collection('users')
             .where('email', '==', email)
@@ -1022,7 +1138,6 @@ confirmAddContact.addEventListener('click', async () => {
             return;
         }
         
-        // Add contact to user's contacts
         const userRef = db.collection('users').doc(currentUser.uid);
         const newContact = { name, email, lastMessage: '' };
         const updatedContacts = [...contacts, newContact];
@@ -1033,8 +1148,6 @@ confirmAddContact.addEventListener('click', async () => {
         currentUserData.contacts = updatedContacts;
         renderContacts();
         addContactModal.classList.add('hidden');
-        
-        // Auto-select new contact
         selectContact(email);
         
     } catch (err) {
@@ -1046,6 +1159,69 @@ confirmAddContact.addEventListener('click', async () => {
 // SEARCH CONTACTS
 // ============================================================
 searchContact.addEventListener('input', renderContacts);
+
+// ============================================================
+// ADMIN FUNCTIONS
+// ============================================================
+async function updateAdminStats() {
+    try {
+        const snapshot = await db.collection('users').get();
+        adminStats.textContent = `Users: ${snapshot.size}`;
+    } catch (err) {
+        console.error('Error getting user count:', err);
+    }
+}
+
+window.adminBroadcast = async function() {
+    if (!isAdmin) return;
+    const message = prompt('Enter broadcast message to send to all users:');
+    if (!message) return;
+    
+    try {
+        const usersSnapshot = await db.collection('users').get();
+        const broadcastPromises = [];
+        
+        usersSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.email !== currentUser.email) {
+                const chatId = getChatId(currentUser.email, userData.email);
+                broadcastPromises.push(
+                    db.collection('chats').doc(chatId).collection('messages').add({
+                        text: `📢 ADMIN BROADCAST: ${message}`,
+                        sender: currentUser.email,
+                        senderName: '📢 Admin',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        recipient: userData.email,
+                        recipientName: userData.name || userData.email,
+                        isBroadcast: true
+                    })
+                );
+            }
+        });
+        
+        await Promise.all(broadcastPromises);
+        alert(`Broadcast sent to ${broadcastPromises.length} users!`);
+    } catch (err) {
+        alert('Error sending broadcast: ' + err.message);
+    }
+};
+
+window.adminViewUsers = async function() {
+    if (!isAdmin) return;
+    try {
+        const snapshot = await db.collection('users').get();
+        let userList = '📋 All Users:\n\n';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            userList += `• ${data.name || 'Unnamed'} (${data.email})\n`;
+            userList += `  NIC: ${data.nicNumber || 'Not provided'}\n`;
+            userList += `  Admin: ${data.isAdmin ? 'Yes' : 'No'}\n\n`;
+        });
+        alert(userList);
+    } catch (err) {
+        alert('Error fetching users: ' + err.message);
+    }
+};
 
 // ============================================================
 // LOGOUT
@@ -1064,7 +1240,9 @@ logoutBtn.addEventListener('click', async () => {
     currentUserData = null;
     contacts = [];
     currentChatWith = null;
-    showPage('registerPage');
+    isAdmin = false;
+    showPage('authPage');
+    toggleAuthMode(); // Reset to login mode
 });
 
 // ============================================================
@@ -1075,8 +1253,11 @@ auth.onAuthStateChanged(async (user) => {
         currentUser = user;
         currentUserData = await getUserData(user.uid);
         
-        // Check if NIC is already captured
-        if (currentUserData && currentUserData.nicNumber) {
+        // Check if admin
+        isAdmin = currentUserData?.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === user.email);
+        
+        // If admin or already has NIC, go to chat
+        if (isAdmin || (currentUserData && currentUserData.nicNumber)) {
             showPage('chatPage');
             loadChat();
         } else {
@@ -1084,7 +1265,8 @@ auth.onAuthStateChanged(async (user) => {
             startCamera();
         }
     } else {
-        showPage('registerPage');
+        showPage('authPage');
+        if (!isLoginMode) toggleAuthMode(); // Reset to login
         if (mediaStream) {
             mediaStream.getTracks().forEach(track => track.stop());
             mediaStream = null;
@@ -1095,7 +1277,15 @@ auth.onAuthStateChanged(async (user) => {
 // ============================================================
 // INITIAL SETUP
 // ============================================================
+// Check for existing session
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        // Session exists, handle in the main observer above
+    }
+});
+
 console.log('ChatApp loaded successfully!');
+console.log('👑 Admin accounts: admin1@chatapp.com / admin2@chatapp.com (password: admin123)');
 </script>
 </body>
 </html>
