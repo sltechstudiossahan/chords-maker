@@ -92,6 +92,20 @@
         }
         .btn-primary:hover { background: #00c49a; transform: scale(1.01); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-skip {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 2px solid #2a3942;
+            border-radius: 16px;
+            color: #8696a0;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .btn-skip:hover { background: #2a3942; color: #fff; border-color: #3b4a54; }
         .error-msg {
             color: #ff5e5e;
             font-size: 13px;
@@ -140,6 +154,11 @@
             margin-bottom: 16px;
             font-size: 22px;
             font-weight: 500;
+        }
+        .nic-container .sub-text {
+            color: #8696a0;
+            font-size: 13px;
+            margin-bottom: 16px;
         }
         .video-wrapper {
             position: relative;
@@ -628,6 +647,7 @@
 <div id="nicPage" class="page hidden">
     <div class="nic-container">
         <h2>📇 Capture Your NIC</h2>
+        <p class="sub-text">Optional: Capture your National Identity Card for verification</p>
         <div class="video-wrapper">
             <video id="videoPreview" autoplay playsinline></video>
             <div class="capture-overlay">
@@ -635,7 +655,8 @@
                 <button class="btn-secondary" id="retryCamBtn">🔄 Retry</button>
             </div>
         </div>
-        <div class="nic-status" id="nicStatus">📷 Position your NIC in frame</div>
+        <div class="nic-status" id="nicStatus">📷 Position your NIC in frame (optional)</div>
+        <button class="btn-skip" id="skipNicBtn">⏭️ Skip for now</button>
     </div>
 </div>
 
@@ -752,6 +773,7 @@ let unsubscribeMessages = null;
 let mediaStream = null;
 let isAdmin = false;
 let isLoginMode = true;
+let isProcessingNIC = false;
 
 // DOM refs
 const $ = id => document.getElementById(id);
@@ -769,6 +791,7 @@ const authSwitchLink = $('authSwitchLink');
 const video = $('videoPreview');
 const captureBtn = $('captureBtn');
 const retryCamBtn = $('retryCamBtn');
+const skipNicBtn = $('skipNicBtn');
 const nicStatus = $('nicStatus');
 const currentUserName = $('currentUserName');
 const roleBadge = $('roleBadge');
@@ -861,7 +884,8 @@ authBtn.addEventListener('click', async () => {
                 nicNumber: '',
                 contacts: [],
                 isAdmin: ADMIN_ACCOUNTS.some(a => a.email === email),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                nicCaptured: false
             });
         }
         
@@ -889,7 +913,7 @@ async function startCamera() {
         });
         video.srcObject = mediaStream;
         await video.play();
-        nicStatus.innerHTML = '📷 Position your NIC in frame and tap Capture';
+        nicStatus.innerHTML = '📷 Position your NIC in frame and tap Capture (optional)';
         captureBtn.disabled = false;
     } catch (err) {
         nicStatus.innerHTML = '❌ Camera error: ' + err.message + '. Please allow camera access.';
@@ -899,7 +923,41 @@ async function startCamera() {
 
 retryCamBtn.addEventListener('click', startCamera);
 
+// Skip NIC capture
+skipNicBtn.addEventListener('click', async () => {
+    if (currentUser) {
+        try {
+            // Ensure user document exists
+            await ensureUserDocument(currentUser.uid);
+            showPage('chatPage');
+            loadChat();
+        } catch (err) {
+            console.error('Error skipping NIC:', err);
+            nicStatus.innerHTML = '❌ Error: ' + err.message;
+        }
+    }
+});
+
+// Ensure user document exists
+async function ensureUserDocument(uid) {
+    const docRef = db.collection('users').doc(uid);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+        await docRef.set({
+            email: currentUser.email,
+            name: currentUser.email.split('@')[0],
+            nicNumber: '',
+            contacts: [],
+            isAdmin: ADMIN_ACCOUNTS.some(a => a.email === currentUser.email),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            nicCaptured: false
+        });
+    }
+}
+
 captureBtn.addEventListener('click', async () => {
+    if (isProcessingNIC) return;
+    isProcessingNIC = true;
     captureBtn.disabled = true;
     nicStatus.innerHTML = '<span class="spinner"></span> Capturing...';
 
@@ -924,11 +982,15 @@ captureBtn.addEventListener('click', async () => {
         const text = result.data.text;
         const nicData = parseNICDetails(text);
         
+        // Ensure user document exists
+        await ensureUserDocument(currentUser.uid);
+        
         if (nicData.nicNumber || nicData.fullName) {
             await db.collection('users').doc(currentUser.uid).update({
                 nicNumber: nicData.nicNumber || '',
                 name: nicData.fullName || currentUserData?.name || currentUser.email.split('@')[0],
-                nicDetails: nicData
+                nicDetails: nicData,
+                nicCaptured: true
             });
             
             currentUserData = await getUserData(currentUser.uid);
@@ -938,15 +1000,18 @@ captureBtn.addEventListener('click', async () => {
                 showPage('chatPage');
                 loadChat();
                 captureBtn.disabled = false;
+                isProcessingNIC = false;
             }, 1500);
         } else {
-            nicStatus.innerHTML = '⚠️ Could not read NIC details clearly. Please try again with better lighting.';
+            nicStatus.innerHTML = '⚠️ Could not read NIC details clearly. You can skip or try again.';
             captureBtn.disabled = false;
+            isProcessingNIC = false;
         }
     } catch (err) {
         console.error('OCR Error:', err);
-        nicStatus.innerHTML = '❌ Error reading NIC: ' + err.message;
+        nicStatus.innerHTML = '❌ Error reading NIC: ' + err.message + '. You can skip or try again.';
         captureBtn.disabled = false;
+        isProcessingNIC = false;
     }
 });
 
@@ -1018,11 +1083,16 @@ function parseNICDetails(text) {
 // USER DATA
 // ============================================================
 async function getUserData(uid) {
-    const doc = await db.collection('users').doc(uid).get();
-    if (doc.exists) {
-        return { uid, ...doc.data() };
+    try {
+        const doc = await db.collection('users').doc(uid).get();
+        if (doc.exists) {
+            return { uid, ...doc.data() };
+        }
+        return null;
+    } catch (err) {
+        console.error('Error getting user data:', err);
+        return null;
     }
-    return null;
 }
 
 // ============================================================
@@ -1053,13 +1123,17 @@ async function loadChat() {
     if (!currentUser) return;
     
     currentUserData = await getUserData(currentUser.uid);
-    if (!currentUserData) return;
+    if (!currentUserData) {
+        // Create user document if it doesn't exist
+        await ensureUserDocument(currentUser.uid);
+        currentUserData = await getUserData(currentUser.uid);
+    }
     
     // Check if admin
-    isAdmin = currentUserData.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === currentUser.email);
+    isAdmin = currentUserData?.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === currentUser.email);
     
     // Update UI
-    currentUserName.textContent = currentUserData.name || currentUser.email.split('@')[0];
+    currentUserName.textContent = currentUserData?.name || currentUser.email.split('@')[0];
     roleBadge.textContent = isAdmin ? 'Admin' : 'User';
     roleBadge.className = `role-badge ${isAdmin ? 'admin' : 'user'}`;
     
@@ -1070,7 +1144,7 @@ async function loadChat() {
         adminPanel.classList.add('hidden');
     }
     
-    contacts = currentUserData.contacts || [];
+    contacts = currentUserData?.contacts || [];
     renderContacts();
     
     if (currentChatWith) {
@@ -1244,16 +1318,22 @@ function getChatId(email1, email2) {
 
 async function updateContactLastMessage(email, lastMessage) {
     if (!currentUser) return;
-    const userRef = db.collection('users').doc(currentUser.uid);
-    const contacts = currentUserData.contacts || [];
-    const updatedContacts = contacts.map(c => {
-        if (c.email === email) {
-            return { ...c, lastMessage };
+    try {
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const contacts = currentUserData?.contacts || [];
+        const updatedContacts = contacts.map(c => {
+            if (c.email === email) {
+                return { ...c, lastMessage };
+            }
+            return c;
+        });
+        await userRef.update({ contacts: updatedContacts });
+        if (currentUserData) {
+            currentUserData.contacts = updatedContacts;
         }
-        return c;
-    });
-    await userRef.update({ contacts: updatedContacts });
-    currentUserData.contacts = updatedContacts;
+    } catch (err) {
+        console.error('Error updating last message:', err);
+    }
 }
 
 // ============================================================
@@ -1342,7 +1422,9 @@ confirmAddContact.addEventListener('click', async () => {
         await userRef.update({ contacts: updatedContacts });
         
         contacts = updatedContacts;
-        currentUserData.contacts = updatedContacts;
+        if (currentUserData) {
+            currentUserData.contacts = updatedContacts;
+        }
         renderContacts();
         addContactModal.classList.add('hidden');
         selectContact(email);
@@ -1442,7 +1524,7 @@ logoutBtn.addEventListener('click', async () => {
     messageInput.disabled = true;
     sendBtn.disabled = true;
     showPage('authPage');
-    toggleAuthMode();
+    if (!isLoginMode) toggleAuthMode();
 });
 
 // ============================================================
@@ -1457,10 +1539,12 @@ auth.onAuthStateChanged(async (user) => {
         isAdmin = currentUserData?.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === user.email);
         
         // If admin or already has NIC, go to chat
-        if (isAdmin || (currentUserData && currentUserData.nicNumber)) {
+        if (isAdmin || (currentUserData && currentUserData.nicCaptured) || (currentUserData && currentUserData.nicNumber)) {
             showPage('chatPage');
             loadChat();
         } else {
+            // Ensure user document exists
+            await ensureUserDocument(user.uid);
             showPage('nicPage');
             startCamera();
         }
