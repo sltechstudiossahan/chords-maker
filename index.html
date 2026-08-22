@@ -343,12 +343,66 @@
         .contact-item .info .email { font-size: 12px; color: #8696a0; }
         .contact-item .info .last-msg { font-size: 13px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .contact-item .time { font-size: 11px; color: #8696a0; flex-shrink: 0; }
-        /* Chat Area */
+        /* Chat Area - Updated Message Styles */
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: #0b141a;
+        }
+        /* Chat Header with Contact Profile */
+        .chat-contact-header {
+            padding: 12px 20px;
+            background: #1f2c33;
+            border-bottom: 1px solid #2a3942;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+            min-height: 70px;
+        }
+        .chat-contact-header .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #00a884;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+            color: #fff;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+        .chat-contact-header .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-contact-header .contact-info .name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+        }
+        .chat-contact-header .contact-info .details {
+            font-size: 12px;
+            color: #8696a0;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 2px;
+        }
+        .chat-contact-header .contact-info .details span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .chat-contact-header .contact-status {
+            font-size: 12px;
+            color: #00a884;
+            padding: 4px 12px;
+            background: #0b141a;
+            border-radius: 20px;
         }
         .chat-messages {
             flex: 1;
@@ -369,20 +423,53 @@
             animation: fadeUp 0.25s ease;
         }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Sent messages - White background with dark text */
         .msg.sent {
             align-self: flex-end;
-            background: #005c4b;
-            color: #fff;
+            background: #ffffff;
+            color: #1a1a1a;
             border-bottom-right-radius: 4px;
         }
+        .msg.sent .sender { color: #666666; }
+        .msg.sent .time-stamp { color: #666666; }
+        
+        /* Received messages - Black/dark background with white text */
         .msg.received {
             align-self: flex-start;
             background: #1f2c33;
-            color: #e9edef;
+            color: #ffffff;
             border-bottom-left-radius: 4px;
         }
-        .msg .sender { font-size: 11px; color: #8696a0; margin-bottom: 4px; display: block; }
-        .msg .time-stamp { font-size: 10px; color: #8696a0; margin-top: 4px; display: block; text-align: right; }
+        .msg.received .sender { color: #8696a0; }
+        .msg.received .time-stamp { color: #8696a0; }
+        
+        /* Admin broadcast messages */
+        .msg.broadcast {
+            align-self: center;
+            background: #ffd700;
+            color: #0b141a;
+            max-width: 85%;
+            font-weight: 500;
+            text-align: center;
+            border-radius: 20px;
+        }
+        .msg.broadcast .sender { color: #0b141a; font-weight: 600; }
+        .msg.broadcast .time-stamp { color: #0b141a; opacity: 0.7; }
+        
+        .msg .sender { 
+            font-size: 11px; 
+            margin-bottom: 4px; 
+            display: block; 
+            font-weight: 500;
+        }
+        .msg .time-stamp { 
+            font-size: 10px; 
+            margin-top: 4px; 
+            display: block; 
+            text-align: right;
+            opacity: 0.8;
+        }
         .chat-input-area {
             padding: 12px 20px;
             background: #1f2c33;
@@ -402,6 +489,7 @@
             outline: none;
         }
         .chat-input-area input::placeholder { color: #8696a0; }
+        .chat-input-area input:disabled { opacity: 0.5; cursor: not-allowed; }
         .chat-input-area button {
             padding: 10px 24px;
             background: #00a884;
@@ -504,6 +592,7 @@
             .nic-container { padding: 16px; }
             .admin-panel { flex-direction: column; align-items: stretch; }
             .admin-panel .stats { margin-left: 0; }
+            .chat-contact-header .contact-info .details { flex-direction: column; gap: 2px; }
         }
     </style>
 </head>
@@ -580,6 +669,21 @@
         </div>
         <!-- Chat Area -->
         <div class="chat-area">
+            <!-- Contact Profile Header -->
+            <div id="chatContactHeader" class="chat-contact-header hidden">
+                <div class="avatar" id="contactAvatar">?</div>
+                <div class="contact-info">
+                    <div class="name" id="contactNameDisplay">Contact Name</div>
+                    <div class="details" id="contactDetails">
+                        <span>📧 <span id="contactEmailDisplay">email@example.com</span></span>
+                        <span>🆔 <span id="contactNicDisplay">NIC: N/A</span></span>
+                        <span>📅 <span id="contactBirthDisplay">Birth: N/A</span></span>
+                        <span>⚤ <span id="contactGenderDisplay">Gender: N/A</span></span>
+                    </div>
+                </div>
+                <div class="contact-status" id="contactStatus">● Online</div>
+            </div>
+            
             <div class="chat-messages" id="chatMessages">
                 <div class="empty-chat">
                     <span>💬</span>
@@ -587,8 +691,8 @@
                 </div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="messageInput" placeholder="Type a message..." />
-                <button id="sendBtn">Send</button>
+                <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+                <button id="sendBtn" disabled>Send</button>
             </div>
         </div>
     </div>
@@ -612,15 +716,14 @@
 // ============================================================
 // 🔥 FIREBASE CONFIG
 // ============================================================
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCaMdPoVqGflbBhWhsuV4L2duqiASIbP64",
-  authDomain: "src-competion-web.firebaseapp.com",
-  projectId: "src-competion-web",
-  storageBucket: "src-competion-web.firebasestorage.app",
-  messagingSenderId: "568183938397",
-  appId: "1:568183938397:web:02d16665d7bd393d505cb4",
-  measurementId: "G-C0YQX47SR5"
+    apiKey: "AIzaSyCaMdPoVqGflbBhWhsuV4L2duqiASIbP64",
+    authDomain: "src-competion-web.firebaseapp.com",
+    projectId: "src-competion-web",
+    storageBucket: "src-competion-web.firebasestorage.app",
+    messagingSenderId: "568183938397",
+    appId: "1:568183938397:web:02d16665d7bd393d505cb4",
+    measurementId: "G-C0YQX47SR5"
 };
 
 // Initialize Firebase
@@ -684,6 +787,14 @@ const contactEmail = $('contactEmail');
 const confirmAddContact = $('confirmAddContact');
 const cancelAddContact = $('cancelAddContact');
 const addContactError = $('addContactError');
+const chatContactHeader = $('chatContactHeader');
+const contactAvatar = $('contactAvatar');
+const contactNameDisplay = $('contactNameDisplay');
+const contactEmailDisplay = $('contactEmailDisplay');
+const contactNicDisplay = $('contactNicDisplay');
+const contactBirthDisplay = $('contactBirthDisplay');
+const contactGenderDisplay = $('contactGenderDisplay');
+const contactStatus = $('contactStatus');
 
 // ============================================================
 // NAVIGATION
@@ -915,6 +1026,27 @@ async function getUserData(uid) {
 }
 
 // ============================================================
+// GET USER BY EMAIL
+// ============================================================
+async function getUserByEmail(email) {
+    if (allUsersCache[email]) {
+        return allUsersCache[email];
+    }
+    try {
+        const snapshot = await db.collection('users').where('email', '==', email).get();
+        if (!snapshot.empty) {
+            const data = snapshot.docs[0].data();
+            allUsersCache[email] = { id: snapshot.docs[0].id, ...data };
+            return allUsersCache[email];
+        }
+        return null;
+    } catch (err) {
+        console.error('Error getting user by email:', err);
+        return null;
+    }
+}
+
+// ============================================================
 // CHAT FUNCTIONALITY
 // ============================================================
 async function loadChat() {
@@ -943,6 +1075,7 @@ async function loadChat() {
     
     if (currentChatWith) {
         loadMessages(currentChatWith);
+        displayContactProfile(currentChatWith);
     }
 }
 
@@ -980,12 +1113,66 @@ function renderContacts() {
     `).join('');
 }
 
+// ============================================================
+// DISPLAY CONTACT PROFILE
+// ============================================================
+async function displayContactProfile(email) {
+    if (!email) {
+        chatContactHeader.classList.add('hidden');
+        return;
+    }
+    
+    const contact = contacts.find(c => c.email === email);
+    if (!contact) {
+        chatContactHeader.classList.add('hidden');
+        return;
+    }
+    
+    try {
+        const userData = await getUserByEmail(email);
+        if (!userData) {
+            chatContactHeader.classList.add('hidden');
+            return;
+        }
+        
+        chatContactHeader.classList.remove('hidden');
+        const initial = (userData.name || userData.email).charAt(0).toUpperCase();
+        contactAvatar.textContent = initial;
+        contactNameDisplay.textContent = userData.name || 'Unknown User';
+        contactEmailDisplay.textContent = userData.email;
+        
+        // Show NIC details if available
+        const nicDetails = userData.nicDetails || {};
+        const nicNumber = userData.nicNumber || nicDetails.nicNumber || 'N/A';
+        const birthYear = nicDetails.birthYear || 'N/A';
+        const gender = nicDetails.gender || 'N/A';
+        
+        contactNicDisplay.textContent = `NIC: ${nicNumber}`;
+        contactBirthDisplay.textContent = `Birth: ${birthYear}`;
+        contactGenderDisplay.textContent = `Gender: ${gender}`;
+        
+        contactStatus.textContent = '● Online';
+        contactStatus.style.color = '#00a884';
+        
+    } catch (err) {
+        console.error('Error displaying contact profile:', err);
+        chatContactHeader.classList.add('hidden');
+    }
+}
+
+// ============================================================
+// SELECT CONTACT
+// ============================================================
 window.selectContact = function(email) {
     currentChatWith = email;
     renderContacts();
     loadMessages(email);
-    // Enable send button
+    displayContactProfile(email);
+    
+    // Enable input and send button
+    messageInput.disabled = false;
     sendBtn.disabled = false;
+    messageInput.focus();
 };
 
 async function loadMessages(contactEmail) {
@@ -1016,9 +1203,18 @@ async function loadMessages(contactEmail) {
             snapshot.forEach(doc => {
                 const msg = doc.data();
                 const isSent = msg.sender === currentUser.email;
+                const isBroadcast = msg.isBroadcast || false;
+                
+                // Determine message class
+                let msgClass = isSent ? 'sent' : 'received';
+                if (isBroadcast) {
+                    msgClass = 'broadcast';
+                }
+                
                 messagesHTML += `
-                    <div class="msg ${isSent ? 'sent' : 'received'}">
-                        ${!isSent ? `<span class="sender">${msg.senderName || 'Unknown'}</span>` : ''}
+                    <div class="msg ${msgClass}">
+                        ${!isSent && !isBroadcast ? `<span class="sender">${msg.senderName || 'Unknown'}</span>` : ''}
+                        ${isBroadcast ? `<span class="sender">📢 ADMIN</span>` : ''}
                         ${msg.text}
                         <span class="time-stamp">${msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
                     </div>
@@ -1188,7 +1384,7 @@ window.adminBroadcast = async function() {
                 const chatId = getChatId(currentUser.email, userData.email);
                 broadcastPromises.push(
                     db.collection('chats').doc(chatId).collection('messages').add({
-                        text: `📢 ADMIN BROADCAST: ${message}`,
+                        text: `📢 ${message}`,
                         sender: currentUser.email,
                         senderName: '📢 Admin',
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1242,8 +1438,11 @@ logoutBtn.addEventListener('click', async () => {
     contacts = [];
     currentChatWith = null;
     isAdmin = false;
+    chatContactHeader.classList.add('hidden');
+    messageInput.disabled = true;
+    sendBtn.disabled = true;
     showPage('authPage');
-    toggleAuthMode(); // Reset to login mode
+    toggleAuthMode();
 });
 
 // ============================================================
@@ -1267,24 +1466,20 @@ auth.onAuthStateChanged(async (user) => {
         }
     } else {
         showPage('authPage');
-        if (!isLoginMode) toggleAuthMode(); // Reset to login
+        if (!isLoginMode) toggleAuthMode();
         if (mediaStream) {
             mediaStream.getTracks().forEach(track => track.stop());
             mediaStream = null;
         }
+        chatContactHeader.classList.add('hidden');
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
     }
 });
 
 // ============================================================
 // INITIAL SETUP
 // ============================================================
-// Check for existing session
-auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        // Session exists, handle in the main observer above
-    }
-});
-
 console.log('ChatApp loaded successfully!');
 console.log('👑 Admin accounts: admin1@chatapp.com / admin2@chatapp.com (password: admin123)');
 </script>
