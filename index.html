@@ -11,11 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <!-- Tesseract.js for OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/fontawesome.min.css" />
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
         * {
             margin: 0;
@@ -50,16 +49,13 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        ::-webkit-scrollbar {
-            width: 4px;
+        .sinhala-text {
+            font-family: 'Noto Sans Sinhala', 'Inter', sans-serif;
         }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
         
         .hidden { display: none !important; }
         .page {
@@ -81,7 +77,6 @@
             position: relative;
             overflow: hidden;
         }
-        
         #authPage::before {
             content: '';
             position: absolute;
@@ -111,7 +106,6 @@
             position: relative;
             z-index: 1;
         }
-        
         .auth-header {
             text-align: center;
             margin-bottom: 36px;
@@ -390,7 +384,6 @@
             background: var(--bg-primary);
         }
         
-        /* Header */
         .chat-header {
             padding: 14px 24px;
             background: var(--bg-secondary);
@@ -481,7 +474,6 @@
             border-color: rgba(255, 94, 94, 0.2);
         }
         
-        /* Admin Panel */
         .admin-panel {
             background: var(--bg-secondary);
             padding: 10px 24px;
@@ -526,14 +518,12 @@
             margin-left: auto;
         }
         
-        /* Layout */
         .chat-layout {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
         
-        /* Contacts Sidebar */
         .contacts-sidebar {
             width: 340px;
             background: var(--bg-secondary);
@@ -645,9 +635,6 @@
             align-items: center;
             gap: 6px;
         }
-        .contact-item .info .name .emoji-badge {
-            font-size: 13px;
-        }
         .contact-item .info .email {
             font-size: 12px;
             color: var(--text-muted);
@@ -666,7 +653,6 @@
             flex-shrink: 0;
         }
         
-        /* Chat Area */
         .chat-area {
             flex: 1;
             display: flex;
@@ -707,26 +693,10 @@
             align-items: center;
             gap: 8px;
         }
-        .chat-contact-header .contact-info .name .emoji-badge {
-            font-size: 14px;
-        }
         .chat-contact-header .contact-info .about {
             font-size: 12px;
             color: var(--text-muted);
             margin-top: 1px;
-        }
-        .chat-contact-header .contact-info .details {
-            font-size: 11px;
-            color: var(--text-muted);
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-top: 2px;
-        }
-        .chat-contact-header .contact-info .details span {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
         .chat-contact-header .contact-status {
             font-size: 12px;
@@ -758,6 +728,9 @@
             line-height: 1.6;
             word-wrap: break-word;
             animation: fadeIn 0.3s ease;
+        }
+        .msg.sinhala {
+            font-family: 'Noto Sans Sinhala', 'Inter', sans-serif;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
@@ -820,39 +793,162 @@
             opacity: 0.7;
         }
         
+        /* Media Messages */
+        .msg .media-wrapper {
+            margin: -4px -4px 4px -4px;
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 300px;
+        }
+        .msg .media-wrapper img,
+        .msg .media-wrapper video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+        .msg .media-wrapper audio {
+            width: 100%;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+        }
+        .msg .media-caption {
+            margin-top: 4px;
+        }
+        .msg .voice-note {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+        }
+        .msg .voice-note .play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .msg .voice-note .play-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .msg .voice-note .waveform {
+            flex: 1;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .msg .voice-note .waveform .bar {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            height: 100%;
+            transition: height 0.3s;
+        }
+        .msg .voice-note .duration {
+            font-size: 12px;
+            color: var(--text-muted);
+            min-width: 40px;
+        }
+        .msg.sent .voice-note .waveform .bar {
+            background: rgba(255,255,255,0.3);
+        }
+        .msg.received .voice-note .waveform .bar {
+            background: rgba(255,255,255,0.1);
+        }
+        
         .chat-input-area {
             padding: 14px 24px;
             background: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-shrink: 0;
+            align-items: center;
+            flex-wrap: wrap;
         }
-        .chat-input-area input {
+        .chat-input-area .input-wrapper {
             flex: 1;
-            padding: 14px 20px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
             background: rgba(255,255,255,0.04);
             border: 1px solid var(--border-color);
             border-radius: 40px;
+            padding: 4px 8px;
+            transition: all 0.3s;
+        }
+        .chat-input-area .input-wrapper:focus-within {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.06);
+        }
+        .chat-input-area .input-wrapper input {
+            flex: 1;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
             color: #fff;
             font-size: 15px;
             font-family: 'Inter', sans-serif;
             outline: none;
-            transition: all 0.3s;
+            min-width: 0;
         }
-        .chat-input-area input:focus {
-            border-color: var(--primary);
-            background: rgba(255,255,255,0.06);
+        .chat-input-area .input-wrapper input.sinhala-input {
+            font-family: 'Noto Sans Sinhala', 'Inter', sans-serif;
         }
-        .chat-input-area input::placeholder {
+        .chat-input-area .input-wrapper input::placeholder {
             color: var(--text-muted);
         }
-        .chat-input-area input:disabled {
+        .chat-input-area .input-wrapper input:disabled {
             opacity: 0.4;
             cursor: not-allowed;
         }
+        .chat-input-area .input-wrapper .media-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        .chat-input-area .input-wrapper .media-btn:hover {
+            color: var(--primary);
+            background: rgba(0, 168, 132, 0.1);
+        }
+        .chat-input-area .input-wrapper .media-btn.recording {
+            color: #ff5e5e;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .chat-input-area .input-wrapper .language-indicator {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 2px 10px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: default;
+            white-space: nowrap;
+        }
+        .chat-input-area .input-wrapper .language-indicator.sinhala {
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
         .chat-input-area button {
-            padding: 14px 28px;
+            padding: 12px 24px;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border: none;
             border-radius: 40px;
@@ -865,6 +961,7 @@
             align-items: center;
             gap: 8px;
             font-size: 14px;
+            white-space: nowrap;
         }
         .chat-input-area button:hover {
             transform: scale(1.04);
@@ -989,7 +1086,6 @@
             background: rgba(255,255,255,0.08);
         }
         
-        /* Emoji Grid */
         .emoji-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -1035,10 +1131,6 @@
             .nic-container {
                 padding: 20px;
             }
-            .chat-contact-header .contact-info .details {
-                flex-direction: column;
-                gap: 2px;
-            }
             .modal-box {
                 padding: 28px 20px;
             }
@@ -1050,6 +1142,12 @@
             }
             .contact-item .info .email {
                 display: none;
+            }
+            .chat-input-area .input-wrapper .language-indicator {
+                display: none;
+            }
+            .msg .media-wrapper {
+                max-width: 200px;
             }
         }
         @media (max-width: 480px) {
@@ -1076,6 +1174,16 @@
             }
             .msg {
                 max-width: 85%;
+            }
+            .chat-input-area {
+                padding: 10px 12px;
+            }
+            .chat-input-area button {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            .msg .media-wrapper {
+                max-width: 160px;
             }
         }
     </style>
@@ -1191,12 +1299,6 @@
                         <span class="emoji-badge" id="contactEmojiDisplay"></span>
                     </div>
                     <div class="about" id="contactAboutDisplay">No about yet</div>
-                    <div class="details">
-                        <span><i class="fas fa-envelope"></i> <span id="contactEmailDisplay">email@example.com</span></span>
-                        <span><i class="fas fa-id-card"></i> <span id="contactNicDisplay">NIC: N/A</span></span>
-                        <span><i class="fas fa-calendar"></i> <span id="contactBirthDisplay">Birth: N/A</span></span>
-                        <span><i class="fas fa-venus-mars"></i> <span id="contactGenderDisplay">Gender: N/A</span></span>
-                    </div>
                 </div>
                 <div class="contact-status">
                     <i class="fas fa-circle" style="font-size:8px;"></i> Online
@@ -1211,7 +1313,14 @@
             </div>
             
             <div class="chat-input-area">
-                <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+                <div class="input-wrapper">
+                    <button class="media-btn" id="photoBtn" title="Send Photo"><i class="fas fa-image"></i></button>
+                    <button class="media-btn" id="videoBtn" title="Send Video"><i class="fas fa-video"></i></button>
+                    <button class="media-btn" id="voiceBtn" title="Voice Message"><i class="fas fa-microphone"></i></button>
+                    <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+                    <span class="language-indicator" id="langIndicator">EN</span>
+                    <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" />
+                </div>
                 <button id="sendBtn" disabled><i class="fas fa-paper-plane"></i> Send</button>
             </div>
         </div>
@@ -1289,6 +1398,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 // ============================================================
 // ADMIN ACCOUNTS
@@ -1312,6 +1422,12 @@ let isAdmin = false;
 let isLoginMode = true;
 let isProcessingNIC = false;
 let selectedEmoji = '😊';
+let currentLanguage = 'en';
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let recordingTimer = null;
+let recordingDuration = 0;
 
 // DOM refs
 const $ = id => document.getElementById(id);
@@ -1351,10 +1467,6 @@ const contactAvatar = $('contactAvatar');
 const contactNameDisplay = $('contactNameDisplay');
 const contactEmojiDisplay = $('contactEmojiDisplay');
 const contactAboutDisplay = $('contactAboutDisplay');
-const contactEmailDisplay = $('contactEmailDisplay');
-const contactNicDisplay = $('contactNicDisplay');
-const contactBirthDisplay = $('contactBirthDisplay');
-const contactGenderDisplay = $('contactGenderDisplay');
 const contactStatus = $('contactStatus');
 const profileModal = $('profileModal');
 const profileAbout = $('profileAbout');
@@ -1363,6 +1475,61 @@ const saveProfileBtn = $('saveProfileBtn');
 const skipProfileBtn = $('skipProfileBtn');
 const profileError = $('profileError');
 const emojiGrid = $('emojiGrid');
+const photoBtn = $('photoBtn');
+const videoBtn = $('videoBtn');
+const voiceBtn = $('voiceBtn');
+const fileInput = $('fileInput');
+const langIndicator = $('langIndicator');
+
+// ============================================================
+// LANGUAGE DETECTION
+// ============================================================
+const SINHALA_UNICODE_RANGE = /[\u0D80-\u0DFF]/;
+const SINHALA_CHARS = ['අ','ආ','ඇ','ඈ','ඉ','ඊ','උ','ඌ','ඍ','ඎ','ඏ','ඐ','එ','ඒ','ඓ','ඔ','ඕ','ඖ','ක','ඛ','ග','ඝ','ඞ','ඟ','ච','ඡ','ජ','ඣ','ඤ','ඥ','ඦ','ට','ඨ','ඩ','ඪ','ණ','ඬ','ත','ථ','ද','ධ','න','ඳ','ප','ඵ','බ','භ','ම','ඹ','ය','ර','ල','ව','ශ','ෂ','ස','හ','ළ','ෆ','්','ා','ැ','ෑ','ි','ී','ු','ූ','ෘ','ෙ','ේ','ෛ','ො','ෝ','ෞ','ෟ'];
+
+function detectLanguage(text) {
+    if (!text || text.trim().length === 0) return 'en';
+    
+    // Check if text contains Sinhala Unicode characters
+    if (SINHALA_UNICODE_RANGE.test(text)) {
+        return 'si';
+    }
+    
+    // Check for Sinhala specific characters
+    let sinhalaCount = 0;
+    for (let char of text) {
+        if (SINHALA_CHARS.includes(char)) {
+            sinhalaCount++;
+        }
+    }
+    
+    // If more than 20% of characters are Sinhala, detect as Sinhala
+    if (sinhalaCount / text.length > 0.2) {
+        return 'si';
+    }
+    
+    return 'en';
+}
+
+function updateLanguageIndicator(text) {
+    const lang = detectLanguage(text);
+    currentLanguage = lang;
+    if (lang === 'si') {
+        langIndicator.textContent = 'සිං';
+        langIndicator.className = 'language-indicator sinhala';
+        messageInput.className = 'sinhala-input';
+    } else {
+        langIndicator.textContent = 'EN';
+        langIndicator.className = 'language-indicator';
+        messageInput.className = '';
+    }
+    return lang;
+}
+
+messageInput.addEventListener('input', function() {
+    const text = this.value;
+    updateLanguageIndicator(text);
+});
 
 // ============================================================
 // NAVIGATION
@@ -1766,16 +1933,6 @@ async function displayContactProfile(email) {
         contactNameDisplay.textContent = userData.name || 'Unknown User';
         contactEmojiDisplay.textContent = userData.emoji || '';
         contactAboutDisplay.textContent = userData.about || 'No about yet';
-        contactEmailDisplay.textContent = userData.email;
-
-        const nicDetails = userData.nicDetails || {};
-        const nicNumber = userData.nicNumber || nicDetails.nicNumber || 'N/A';
-        const birthYear = nicDetails.birthYear || 'N/A';
-        const gender = nicDetails.gender || 'N/A';
-
-        contactNicDisplay.textContent = nicNumber;
-        contactBirthDisplay.textContent = birthYear;
-        contactGenderDisplay.textContent = gender;
 
         contactStatus.innerHTML = '<i class="fas fa-circle" style="font-size:8px;"></i> Online';
     } catch (err) {
@@ -1825,12 +1982,48 @@ async function loadMessages(contactEmail) {
                 const isBroadcast = msg.isBroadcast || false;
                 let msgClass = isSent ? 'sent' : 'received';
                 if (isBroadcast) msgClass = 'broadcast';
+                
+                // Check if message is Sinhala
+                const isSinhala = msg.language === 'si' || detectLanguage(msg.text) === 'si';
+                const sinhalaClass = isSinhala ? 'sinhala' : '';
+
+                let mediaHTML = '';
+                if (msg.mediaType === 'image' && msg.mediaUrl) {
+                    mediaHTML = `
+                        <div class="media-wrapper">
+                            <img src="${msg.mediaUrl}" alt="Image" loading="lazy" />
+                        </div>
+                    `;
+                } else if (msg.mediaType === 'video' && msg.mediaUrl) {
+                    mediaHTML = `
+                        <div class="media-wrapper">
+                            <video controls preload="metadata">
+                                <source src="${msg.mediaUrl}" type="video/mp4" />
+                            </video>
+                        </div>
+                    `;
+                } else if (msg.mediaType === 'voice' && msg.mediaUrl) {
+                    const duration = msg.duration || 5;
+                    const bars = Array.from({length: 20}, () => Math.random() * 60 + 20);
+                    mediaHTML = `
+                        <div class="voice-note">
+                            <button class="play-btn" onclick="playVoice('${msg.mediaUrl}', this)">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <div class="waveform">
+                                ${bars.map(h => `<div class="bar" style="height:${h}%"></div>`).join('')}
+                            </div>
+                            <span class="duration">${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, '0')}</span>
+                        </div>
+                    `;
+                }
 
                 messagesHTML += `
-                    <div class="msg ${msgClass}">
+                    <div class="msg ${msgClass} ${sinhalaClass}">
                         ${!isSent && !isBroadcast ? `<span class="sender">${msg.senderName || 'Unknown'}</span>` : ''}
                         ${isBroadcast ? `<span class="sender">📢 ADMIN</span>` : ''}
-                        ${msg.text}
+                        ${mediaHTML}
+                        ${msg.text ? `<div class="media-caption">${msg.text}</div>` : ''}
                         <span class="time-stamp">${msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
                     </div>
                 `;
@@ -1843,8 +2036,8 @@ async function loadMessages(contactEmail) {
                 const lastMsg = snapshot.docs[snapshot.docs.length - 1].data();
                 const contact = contacts.find(c => c.email === contactEmail);
                 if (contact) {
-                    contact.lastMessage = lastMsg.text;
-                    updateContactLastMessage(contactEmail, lastMsg.text);
+                    contact.lastMessage = lastMsg.text || (lastMsg.mediaType === 'image' ? '📷 Photo' : lastMsg.mediaType === 'video' ? '🎥 Video' : lastMsg.mediaType === 'voice' ? '🎤 Voice' : '');
+                    updateContactLastMessage(contactEmail, contact.lastMessage);
                 }
             }
         }, (error) => {
@@ -1874,36 +2067,193 @@ async function updateContactLastMessage(email, lastMessage) {
 }
 
 // ============================================================
-// SEND MESSAGE
+// PLAY VOICE
 // ============================================================
-sendBtn.addEventListener('click', sendMessage);
+window.playVoice = function(url, btn) {
+    const audio = new Audio(url);
+    const icon = btn.querySelector('i');
+    if (audio.paused) {
+        audio.play();
+        icon.className = 'fas fa-pause';
+        audio.onended = () => { icon.className = 'fas fa-play'; };
+    } else {
+        audio.pause();
+        icon.className = 'fas fa-play';
+    }
+};
+
+// ============================================================
+// SEND MESSAGE (with media support)
+// ============================================================
+sendBtn.addEventListener('click', () => sendMessage());
 messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
 
-async function sendMessage() {
+async function sendMessage(mediaData = null, mediaType = null) {
     const text = messageInput.value.trim();
-    if (!text || !currentChatWith || !currentUser) return;
+    if (!text && !mediaData) return;
+    if (!currentChatWith || !currentUser) return;
 
     const chatId = getChatId(currentUser.email, currentChatWith);
     const contact = contacts.find(c => c.email === currentChatWith);
     const contactName = contact ? contact.name : currentChatWith;
     const senderName = currentUserData?.name || currentUser.email.split('@')[0];
+    const language = detectLanguage(text);
+
+    let messageData = {
+        sender: currentUser.email,
+        senderName: senderName,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        recipient: currentChatWith,
+        recipientName: contactName,
+        language: language
+    };
+
+    if (mediaData && mediaType) {
+        messageData.mediaType = mediaType;
+        messageData.mediaUrl = mediaData;
+        if (mediaType === 'voice') {
+            messageData.duration = recordingDuration || 5;
+        }
+        if (text) {
+            messageData.text = text;
+        }
+    } else if (text) {
+        messageData.text = text;
+    }
 
     try {
-        await db.collection('chats').doc(chatId).collection('messages').add({
-            text: text,
-            sender: currentUser.email,
-            senderName: senderName,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            recipient: currentChatWith,
-            recipientName: contactName
-        });
+        await db.collection('chats').doc(chatId).collection('messages').add(messageData);
         messageInput.value = '';
         messageInput.focus();
+        // Reset language indicator
+        langIndicator.textContent = 'EN';
+        langIndicator.className = 'language-indicator';
+        messageInput.className = '';
     } catch (err) {
         console.error('Send message error:', err);
         alert('Failed to send message: ' + err.message);
+    }
+}
+
+// ============================================================
+// MEDIA HANDLING
+// ============================================================
+photoBtn.addEventListener('click', () => {
+    fileInput.accept = 'image/*';
+    fileInput.click();
+});
+
+videoBtn.addEventListener('click', () => {
+    fileInput.accept = 'video/*';
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+    
+    if (!isVideo && !isImage) {
+        alert('Please select an image or video file.');
+        return;
+    }
+
+    // Show upload status
+    const statusMsg = document.createElement('div');
+    statusMsg.className = 'msg sent';
+    statusMsg.textContent = isVideo ? '🎥 Uploading video...' : '📷 Uploading image...';
+    chatMessages.appendChild(statusMsg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+        const storageRef = storage.ref();
+        const fileRef = storageRef.child(`media/${currentUser.uid}/${Date.now()}_${file.name}`);
+        const uploadTask = await fileRef.put(file);
+        const downloadUrl = await uploadTask.ref.getDownloadURL();
+        
+        // Remove status message
+        statusMsg.remove();
+        
+        // Send the media
+        await sendMessage(downloadUrl, isVideo ? 'video' : 'image');
+    } catch (err) {
+        console.error('Upload error:', err);
+        statusMsg.textContent = '❌ Failed to upload: ' + err.message;
+        statusMsg.style.background = '#ff5e5e';
+        setTimeout(() => statusMsg.remove(), 3000);
+    }
+    
+    fileInput.value = '';
+});
+
+// ============================================================
+// VOICE RECORDING
+// ============================================================
+voiceBtn.addEventListener('click', async () => {
+    if (isRecording) {
+        // Stop recording
+        stopRecording();
+        return;
+    }
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        recordingDuration = 0;
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            // Upload to Firebase Storage
+            try {
+                const storageRef = storage.ref();
+                const fileRef = storageRef.child(`voice/${currentUser.uid}/${Date.now()}_voice.mp3`);
+                const uploadTask = await fileRef.put(audioBlob);
+                const downloadUrl = await uploadTask.ref.getDownloadURL();
+                
+                await sendMessage(downloadUrl, 'voice');
+            } catch (err) {
+                console.error('Voice upload error:', err);
+                alert('Failed to send voice message: ' + err.message);
+            }
+            
+            // Stop all tracks
+            stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        voiceBtn.className = 'media-btn recording';
+        
+        // Start duration timer
+        recordingTimer = setInterval(() => {
+            recordingDuration++;
+        }, 1000);
+        
+    } catch (err) {
+        console.error('Voice recording error:', err);
+        alert('Please allow microphone access to record voice messages.');
+    }
+});
+
+function stopRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        voiceBtn.className = 'media-btn';
+        clearInterval(recordingTimer);
     }
 }
 
@@ -2001,7 +2351,8 @@ window.adminBroadcast = async function() {
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     recipient: userData.email,
                     recipientName: userData.name || userData.email,
-                    isBroadcast: true
+                    isBroadcast: true,
+                    language: detectLanguage(message)
                 }));
             }
         });
@@ -2040,6 +2391,9 @@ logoutBtn.addEventListener('click', async () => {
     if (mediaStream) {
         mediaStream.getTracks().forEach(track => track.stop());
         mediaStream = null;
+    }
+    if (isRecording) {
+        stopRecording();
     }
     await auth.signOut();
     currentUser = null;
@@ -2087,6 +2441,7 @@ auth.onAuthStateChanged(async (user) => {
 
 console.log('🚀 ChatPro Premium loaded!');
 console.log('👑 Admin: admin1@chatapp.com / admin2@chatapp.com (pass: admin123)');
+console.log('📱 Features: Photos, Videos, Voice Notes, Auto Language Detection');
 </script>
 </body>
 </html>
