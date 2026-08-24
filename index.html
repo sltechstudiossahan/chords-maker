@@ -2328,12 +2328,23 @@ function createDriveProvider() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope(GOOGLE_DRIVE_SCOPE);
     // Always let the user choose which Google account owns the Drive files.
-    provider.setCustomParameters({prompt: 'select_account consent'});
+    provider.setCustomParameters({prompt: 'select_account'});
     return provider;
+}
+
+function ensureWebAuthEnvironment() {
+    const protocol = window.location && window.location.protocol ? window.location.protocol : '';
+    let storageOK = false;
+    try { const k='__chatpro_storage_test__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); storageOK=true; } catch (_) {}
+    if (protocol !== 'http:' && protocol !== 'https:' && protocol !== 'chrome-extension:') {
+        throw new Error('Google Drive cannot connect while ChatPro is opened directly as a .html file. Run START_CHATPRO.bat and open http://localhost:5500/ChatPro_GoogleDrive_Settings.html, or deploy ChatPro to Firebase Hosting.');
+    }
+    if (!storageOK) throw new Error('Browser web storage is disabled. Enable cookies/site data and local storage for ChatPro, then try again.');
 }
 
 async function getGoogleToken(forceConsent = true) {
     if (!currentUser) throw new Error('Please sign in to ChatPro first.');
+    ensureWebAuthEnvironment();
     if (!driveAuth) throw new Error('Google Drive authentication could not be initialized.');
 
     // IMPORTANT: this does NOT link Google to the ChatPro account.
@@ -2349,13 +2360,33 @@ async function getGoogleToken(forceConsent = true) {
             throw new Error('Google Drive connection was cancelled.');
         }
         if (e.code === 'auth/popup-blocked') {
-            throw new Error('Google sign-in popup was blocked. Allow popups for this site and try again.');
+            // GitHub Pages and some browsers block OAuth popups. Use Firebase's
+            // full-page redirect flow instead of failing the connection.
+            try {
+                sessionStorage.setItem('chatpro_drive_redirect', '1');
+                await driveAuth.signInWithRedirect(provider);
+                return null; // Browser will navigate to Google and back.
+            } catch (redirectError) {
+                throw new Error('Google popup was blocked and redirect login could not start. Allow redirects/popups and try again.');
+            }
         }
         if (e.code === 'auth/unauthorized-domain') {
-            throw new Error('This website domain is not authorized in Firebase Authentication. Add the current domain under Authentication → Settings → Authorized domains.');
+            const host = window.location.hostname || '(unknown domain)';
+            throw new Error('GitHub Pages domain is not authorized. In Firebase Console go to Authentication → Settings → Authorized domains and add: ' + host);
         }
         if (e.code === 'auth/operation-not-allowed') {
             throw new Error('Google sign-in is disabled. Enable Google under Firebase Authentication → Sign-in method.');
+        }
+        if (e.code === 'auth/operation-not-supported-in-this-environment') {
+            // This error can occur when the page is opened inside an iframe.
+            // On GitHub Pages, redirect authentication works as a top-level page.
+            try {
+                sessionStorage.setItem('chatpro_drive_redirect', '1');
+                await driveAuth.signInWithRedirect(provider);
+                return null;
+            } catch (redirectError) {
+                throw new Error('Google Drive authentication is running in an unsupported browser frame. Open the GitHub Pages URL directly (https://YOUR-USERNAME.github.io/...) rather than inside GitHub preview, then click Connect Google Drive.');
+            }
         }
         throw e;
     }
@@ -2365,9 +2396,31 @@ async function getGoogleToken(forceConsent = true) {
     if (!token) throw new Error('Google did not return a Drive access token. Enable Google sign-in and the Google Drive API.');
 
     googleDriveAccessToken = token;
-    // We do not need the secondary Firebase session after obtaining the OAuth token.
     try { await driveAuth.signOut(); } catch (_) {}
     return token;
+}
+
+// Complete a Google Drive redirect login after GitHub Pages returns from Google.
+async function finishDriveRedirect() {
+    if (!driveAuth) return false;
+    if (sessionStorage.getItem('chatpro_drive_redirect') !== '1') return false;
+    sessionStorage.removeItem('chatpro_drive_redirect');
+    try {
+        const result = await driveAuth.getRedirectResult();
+        const credential = result && result.credential;
+        const token = credential && credential.accessToken;
+        if (!token) return false;
+        googleDriveAccessToken = token;
+        try { await driveAuth.signOut(); } catch (_) {}
+        if (currentUser) {
+            await connectGoogleDrive({fromRedirect:true, tokenAlreadyReady:true});
+        }
+        return true;
+    } catch (e) {
+        console.error('Drive redirect result:', e);
+        if (settingsProfileError) settingsProfileError.textContent = 'Google Drive connection failed: ' + (e.message || e);
+        return false;
+    }
 }
 
 async function driveApi(url, options={}) {
@@ -2427,10 +2480,14 @@ async function makeDriveFileReadable(fileId) {
     return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
 }
 
-async function connectGoogleDrive({forSignup=false}={}) {
+async function connectGoogleDrive({forSignup=false, fromRedirect=false, tokenAlreadyReady=false}={}) {
     try {
         if (!currentUser) throw new Error('Please create/sign in to your ChatPro account first.');
-        await getGoogleToken(true);
+        ensureWebAuthEnvironment();
+        if (!tokenAlreadyReady) {
+            const token = await getGoogleToken(true);
+            if (!token) return; // redirect navigation is in progress
+        }
         const identity = await getDriveUserEmail();
         const folderId = await findOrCreateDriveFolder();
         googleDriveReady = true;
@@ -3305,6 +3362,10 @@ auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
         currentUserData = await getUserData(user.uid);
+        // If Google Drive redirected back to GitHub Pages, finish the Drive connection now.
+        if (sessionStorage.getItem('chatpro_drive_redirect') === '1') {
+            setTimeout(() => finishDriveRedirect(), 150);
+        }
         isAdmin = currentUserData?.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === user.email);
 
         if (isAdmin) {
@@ -3332,6 +3393,15 @@ auth.onAuthStateChanged(async (user) => {
         sendBtn.disabled = true;
     }
 });
+
+if (window.location && window.location.protocol === 'file:') {
+    setTimeout(() => {
+        const msg = document.createElement('div');
+        msg.style.cssText = 'position:fixed;left:20px;right:20px;bottom:20px;z-index:99999;padding:16px 20px;border-radius:14px;background:#16222b;color:#fff;border:1px solid rgba(0,168,132,.45);box-shadow:0 12px 40px rgba(0,0,0,.45);font:500 14px Inter,sans-serif;';
+        msg.innerHTML = '<b style="color:#00c49a">Open ChatPro through GitHub Pages</b><br><span style="opacity:.85">Do not use GitHub file preview or file://. Publish the repository with GitHub Pages and open the generated <b>https://...github.io/...</b> address.</span>';
+        document.body.appendChild(msg);
+    }, 500);
+}
 
 console.log('🚀 ChatPro Premium loaded!');
 console.log('👑 Admin: admin1@chatapp.com / admin2@chatapp.com (pass: admin123)');
