@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Tesseract.js for OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- Font Awesome -->
@@ -1299,6 +1300,26 @@
             color: #ff5e5e;
         }
         
+        .signup-drive-card { margin:14px 0 6px; padding:14px; border:1px solid rgba(0,168,132,.25); border-radius:var(--radius-sm); background:linear-gradient(135deg,rgba(0,168,132,.08),rgba(255,255,255,.025)); display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; }
+        .signup-drive-card.hidden { display:none !important; }
+        .signup-drive-icon { width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:#34a853;font-size:21px; }
+        .signup-drive-copy { display:flex;flex-direction:column;gap:3px;min-width:0; }
+        .signup-drive-copy strong { font-size:13px; }
+        .signup-drive-copy span { color:var(--text-muted);font-size:11px;line-height:1.45; }
+        .drive-connect-small { padding:9px 13px;border:0;border-radius:20px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;font:600 12px Inter,sans-serif;cursor:pointer;white-space:nowrap; }
+        .signup-drive-status { grid-column:2 / -1;color:#ffb4b4;font-size:11px; }
+        .signup-drive-status.connected { color:var(--primary); }
+        .settings-top-profile { display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px; }
+        .edit-profile-btn { padding:8px 14px;border:1px solid var(--border-color);background:rgba(255,255,255,.05);color:var(--text-secondary);border-radius:20px;cursor:pointer;font:600 12px Inter,sans-serif; }
+        .edit-profile-btn:hover { color:#fff;background:rgba(255,255,255,.09); }
+        .settings-toggle { position:relative;width:46px;height:26px;flex:0 0 auto; }
+        .settings-toggle input { opacity:0;width:0;height:0; }
+        .settings-toggle .slider { position:absolute;inset:0;cursor:pointer;background:rgba(255,255,255,.12);border:1px solid var(--border-color);border-radius:30px;transition:.25s; }
+        .settings-toggle .slider:before { content:'';position:absolute;width:20px;height:20px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.25s; }
+        .settings-toggle input:checked + .slider { background:var(--primary);border-color:var(--primary); }
+        .settings-toggle input:checked + .slider:before { transform:translateX(20px); }
+        .drive-note { padding:10px 12px;margin-top:10px;border-radius:10px;background:rgba(255,215,0,.06);color:#c9c2a0;font-size:11px;line-height:1.5; }
+
         /* MODALS */
         .modal-overlay {
             position: fixed;
@@ -1505,6 +1526,13 @@
             <i class="fas fa-lock input-icon"></i>
             <input type="password" id="authPassword" placeholder="Password" />
         </div>
+
+        <div id="signupDriveCard" class="signup-drive-card hidden">
+            <div class="signup-drive-icon"><i class="fab fa-google-drive"></i></div>
+            <div class="signup-drive-copy"><strong>Google Drive is required</strong><span>Connect a Drive account before creating your ChatPro account. Photos, videos, voice notes and profile photos will use this Drive.</span></div>
+            <button type="button" id="signupConnectDriveBtn" class="drive-connect-small"><i class="fab fa-google"></i> Connect Drive</button>
+            <div id="signupDriveStatus" class="signup-drive-status">Not connected</div>
+        </div>
         
         <button class="btn-primary" id="authBtn">
             <span class="btn-content">
@@ -1636,7 +1664,7 @@
     <div class="settings-content">
         <!-- Profile Section -->
         <div class="settings-section">
-            <div class="section-title"><i class="fas fa-user"></i> Profile</div>
+            <div class="settings-top-profile"><div class="section-title" style="margin-bottom:0;"><i class="fas fa-user"></i> Profile</div><button class="edit-profile-btn" id="editProfileBtn"><i class="fas fa-pen"></i> Edit My Profile</button></div>
             
             <div class="profile-photo-upload">
                 <div class="preview" id="profilePhotoPreview">
@@ -1694,7 +1722,7 @@
         <div class="settings-section">
             <div class="section-title"><i class="fab fa-google-drive"></i> Google Drive</div>
             <p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px;">
-                Connect your Google Drive to store all media files (photos, videos, voice notes)
+                Connect your real Google Drive account. ChatPro will upload photos, videos, voice notes and profile photos directly to that Drive.
             </p>
             
             <div id="driveStatusContainer" class="google-drive-status">
@@ -1714,6 +1742,7 @@
                 </span>
                 <span style="color:var(--text-muted);font-size:12px;" id="driveStorageInfo">Storage: 0 MB used</span>
             </div>
+            <div class="drive-note"><i class="fas fa-shield-alt"></i> OAuth access tokens are kept in memory and are never saved in Firestore. A Drive folder named <strong>ChatPro Media</strong> is created automatically.</div>
         </div>
         
         <!-- Account Section -->
@@ -1766,6 +1795,22 @@
             </div>
         </div>
         
+        <!-- Messaging & Privacy -->
+        <div class="settings-section">
+            <div class="section-title"><i class="fas fa-comments"></i> Messaging & Privacy</div>
+            <div class="settings-row"><span class="label">Read receipts</span><label class="settings-toggle"><input type="checkbox" id="settingReadReceipts" checked><span class="slider"></span></label></div>
+            <div class="settings-row"><span class="label">Typing indicator</span><label class="settings-toggle"><input type="checkbox" id="settingTyping" checked><span class="slider"></span></label></div>
+            <div class="settings-row"><span class="label">Media auto-download</span><label class="settings-toggle"><input type="checkbox" id="settingAutoDownload" checked><span class="slider"></span></label></div>
+        </div>
+
+        <!-- Appearance & Notifications -->
+        <div class="settings-section">
+            <div class="section-title"><i class="fas fa-sliders-h"></i> Appearance & Notifications</div>
+            <div class="settings-row"><span class="label">Compact chat bubbles</span><label class="settings-toggle"><input type="checkbox" id="settingCompact"><span class="slider"></span></label></div>
+            <div class="settings-row"><span class="label">Sound notifications</span><label class="settings-toggle"><input type="checkbox" id="settingSounds" checked><span class="slider"></span></label></div>
+            <div class="settings-row"><span class="label">Enter key sends message</span><label class="settings-toggle"><input type="checkbox" id="settingEnterSend" checked><span class="slider"></span></label></div>
+        </div>
+
         <!-- Danger Zone -->
         <div class="settings-section" style="border-color:rgba(255,94,94,0.2);">
             <div class="section-title" style="color:#ff5e5e;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</div>
@@ -1815,6 +1860,18 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 
 // ============================================================
+// GOOGLE DRIVE CONFIG
+// ============================================================
+// Replace this placeholder with a Web OAuth 2.0 Client ID from Google Cloud.
+const GOOGLE_DRIVE_CLIENT_ID = 'YOUR_GOOGLE_OAUTH_WEB_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_DRIVE_SCOPE = 'openid email https://www.googleapis.com/auth/drive.file';
+let googleTokenClient = null;
+let googleDriveAccessToken = null;
+let googleDriveFolderId = null;
+let googleDriveReady = false;
+let pendingSignupDrive = null;
+
+// ============================================================
 // ADMIN ACCOUNTS
 // ============================================================
 const ADMIN_ACCOUNTS = [
@@ -1857,6 +1914,17 @@ const authBtn = $('authBtn');
 const authError = $('authError');
 const authSwitchText = $('authSwitchText');
 const authSwitchLink = $('authSwitchLink');
+const signupDriveCard = $('signupDriveCard');
+const signupConnectDriveBtn = $('signupConnectDriveBtn');
+const signupDriveStatus = $('signupDriveStatus');
+const editProfileBtn = $('editProfileBtn');
+const settingReadReceipts = $('settingReadReceipts');
+const settingTyping = $('settingTyping');
+const settingAutoDownload = $('settingAutoDownload');
+const settingCompact = $('settingCompact');
+const settingSounds = $('settingSounds');
+const settingEnterSend = $('settingEnterSend');
+if (signupDriveCard) signupDriveCard.classList.add('hidden');
 const video = $('videoPreview');
 const captureBtn = $('captureBtn');
 const retryCamBtn = $('retryCamBtn');
@@ -1969,6 +2037,7 @@ function showPage(pageId) {
 // ============================================================
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
+    if (signupDriveCard) signupDriveCard.classList.toggle('hidden', isLoginMode);
     if (isLoginMode) {
         authBtn.innerHTML = '<span class="btn-content"><i class="fas fa-sign-in-alt"></i> Login</span>';
         authSwitchText.textContent = "Don't have an account?";
@@ -1983,6 +2052,7 @@ function toggleAuthMode() {
 }
 
 authSwitchLink.addEventListener('click', toggleAuthMode);
+if (signupConnectDriveBtn) signupConnectDriveBtn.addEventListener('click', async()=>{try{await connectGoogleDrive({forSignup:true});}catch(e){console.error(e);}});
 
 authBtn.addEventListener('click', async () => {
     const email = authEmail.value.trim();
@@ -2006,19 +2076,13 @@ authBtn.addEventListener('click', async () => {
         if (isLoginMode) {
             userCredential = await auth.signInWithEmailAndPassword(email, password);
         } else {
+            if (!googleDriveReady || !pendingSignupDrive) throw new Error('Please connect Google Drive before creating your account.');
             userCredential = await auth.createUserWithEmailAndPassword(email, password);
             await db.collection('users').doc(userCredential.user.uid).set({
-                email: email,
-                name: email.split('@')[0],
-                emoji: '😊',
-                about: 'Hey there! I\'m using ChatPro',
-                nicNumber: '',
-                contacts: [],
-                isAdmin: ADMIN_ACCOUNTS.some(a => a.email === email),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                nicCaptured: false,
-                profileSetup: false,
-                driveConnected: false
+                email: email, name: email.split('@')[0], emoji: '😊', about: 'Hey there! I\'m using ChatPro',
+                nicNumber: '', contacts: [], isAdmin: ADMIN_ACCOUNTS.some(a => a.email === email),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(), nicCaptured: false, profileSetup: false,
+                driveConnected: true, driveEmail: pendingSignupDrive.email, driveName: pendingSignupDrive.name, driveFolderId: pendingSignupDrive.folderId
             });
         }
         currentUser = userCredential.user;
@@ -2106,8 +2170,8 @@ captureBtn.addEventListener('click', async () => {
             nicStatus.innerHTML = `✅ NIC captured! Found: ${nicData.fullName || 'Name'}`;
 
             setTimeout(() => {
-                showPage('chatPage');
-                loadChat();
+                showPage('settingsPage');
+                loadSettings();
                 captureBtn.disabled = false;
                 isProcessingNIC = false;
             }, 1500);
@@ -2213,93 +2277,72 @@ async function getUserByEmail(email) {
 }
 
 // ============================================================
-// GOOGLE DRIVE (Simulated with Firebase Storage)
 // ============================================================
-async function connectGoogleDrive() {
-    // Simulate Google Drive connection with email input
-    const email = prompt('Enter your Google Drive email address:');
-    if (!email || !email.includes('@')) {
-        settingsProfileError.textContent = 'Please enter a valid email address.';
-        return;
-    }
-    
-    try {
-        await db.collection('users').doc(currentUser.uid).update({
-            driveConnected: true,
-            driveEmail: email,
-            driveName: email.split('@')[0] || 'User'
-        });
-        
-        currentUserData = await getUserData(currentUser.uid);
-        driveConnected = true;
-        driveEmail = email;
-        updateDriveUI();
-        settingsProfileSuccess.textContent = '✅ Google Drive connected successfully!';
-        settingsProfileSuccess.style.color = 'var(--primary)';
-        setTimeout(() => {
-            settingsProfileSuccess.textContent = '';
-        }, 3000);
-    } catch (err) {
-        settingsProfileError.textContent = 'Error: ' + err.message;
-    }
+// GOOGLE DRIVE - REAL OAUTH + DRIVE API
+// ============================================================
+function initGoogleDriveOAuth() {
+    if (googleTokenClient || typeof google === 'undefined' || !google.accounts?.oauth2) return;
+    if (GOOGLE_DRIVE_CLIENT_ID.startsWith('YOUR_')) return;
+    googleTokenClient = google.accounts.oauth2.initTokenClient({client_id: GOOGLE_DRIVE_CLIENT_ID, scope: GOOGLE_DRIVE_SCOPE, callback: () => {}});
 }
-
-async function disconnectGoogleDrive() {
-    if (!confirm('Disconnect Google Drive? Your media files will still be accessible via Firebase Storage.')) return;
-    
-    try {
-        await db.collection('users').doc(currentUser.uid).update({
-            driveConnected: false,
-            driveToken: null
-        });
-        driveConnected = false;
-        driveEmail = '';
-        currentUserData = await getUserData(currentUser.uid);
-        updateDriveUI();
-        settingsProfileSuccess.textContent = '✅ Google Drive disconnected successfully.';
-        settingsProfileSuccess.style.color = 'var(--text-secondary)';
-        setTimeout(() => {
-            settingsProfileSuccess.textContent = '';
-        }, 3000);
-    } catch (err) {
-        settingsProfileError.textContent = 'Error: ' + err.message;
-    }
+function ensureDriveOAuthConfigured() {
+    if (GOOGLE_DRIVE_CLIENT_ID.startsWith('YOUR_')) throw new Error('Add your Google OAuth Web Client ID to GOOGLE_DRIVE_CLIENT_ID in this file.');
+    if (typeof google === 'undefined' || !google.accounts?.oauth2) throw new Error('Google Identity Services has not loaded yet. Please wait a moment.');
+    initGoogleDriveOAuth();
 }
-
-async function uploadMedia(file) {
-    try {
-        // Always use Firebase Storage (reliable, no OAuth required)
-        const storageRef = storage.ref();
-        const fileRef = storageRef.child(`media/${currentUser.uid}/${Date.now()}_${file.name}`);
-        const uploadTask = await fileRef.put(file);
-        const downloadUrl = await uploadTask.ref.getDownloadURL();
-        return downloadUrl;
-    } catch (err) {
-        console.error('Upload error:', err);
-        throw err;
-    }
+function getGoogleToken(promptMode = '') {
+    return new Promise((resolve,reject) => { try { ensureDriveOAuthConfigured(); googleTokenClient.callback = r => { if (r.error) return reject(new Error(r.error_description || r.error)); googleDriveAccessToken=r.access_token; resolve(r.access_token); }; googleTokenClient.requestAccessToken({prompt:promptMode}); } catch(e){reject(e);} });
 }
-
-function updateDriveUI() {
-    if (currentUserData && currentUserData.driveConnected) {
-        driveName.textContent = currentUserData.driveName || 'Connected';
-        driveEmailEl.textContent = currentUserData.driveEmail || 'Connected to Drive';
-        driveStatusBadge.className = 'status-badge connected';
-        driveStatusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:8px;"></i> Connected';
-        connectDriveBtn.textContent = 'Disconnect';
-        connectDriveBtn.className = 'connect-btn danger';
-        connectDriveBtn.onclick = disconnectGoogleDrive;
-        driveStorageInfo.textContent = 'Storage: 15 GB available (Firebase)';
-    } else {
-        driveName.textContent = 'Not connected';
-        driveEmailEl.textContent = 'Connect your Google Drive account';
-        driveStatusBadge.className = 'status-badge disconnected';
-        driveStatusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:8px;"></i> Disconnected';
-        connectDriveBtn.textContent = 'Connect';
-        connectDriveBtn.className = 'connect-btn primary';
-        connectDriveBtn.onclick = connectGoogleDrive;
-        driveStorageInfo.textContent = 'Storage: 0 MB used';
-    }
+async function driveApi(url, options={}) {
+    if (!googleDriveAccessToken) await getGoogleToken('');
+    const response=await fetch(url,{...options,headers:{...(options.headers||{}),Authorization:`Bearer ${googleDriveAccessToken}`}});
+    if(response.status===401){googleDriveAccessToken=null;await getGoogleToken('');return driveApi(url,options);}
+    if(!response.ok){let detail=response.statusText;try{const e=await response.json();detail=e.error?.message||detail;}catch(_){}throw new Error(detail);}
+    return response;
+}
+async function getDriveUserEmail(){const r=await driveApi('https://www.googleapis.com/oauth2/v3/userinfo');const d=await r.json();return {email:d.email,name:d.name||d.email?.split('@')[0]||'Google User'};}
+async function findOrCreateDriveFolder(){
+    if(googleDriveFolderId)return googleDriveFolderId;
+    const q=encodeURIComponent("name = 'ChatPro Media' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+    const r=await driveApi(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)&pageSize=10`);const d=await r.json();
+    if(d.files?.length){googleDriveFolderId=d.files[0].id;return googleDriveFolderId;}
+    const c=await driveApi('https://www.googleapis.com/drive/v3/files?fields=id,name',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'ChatPro Media',mimeType:'application/vnd.google-apps.folder'})});
+    const folder=await c.json();googleDriveFolderId=folder.id;return googleDriveFolderId;
+}
+async function makeDriveFileReadable(fileId){
+    try{await driveApi(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/permissions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'anyone',role:'reader'})});}catch(e){console.warn('Drive link permission:',e.message);}
+    return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
+}
+async function connectGoogleDrive({forSignup=false}={}){
+    try{
+        await getGoogleToken('consent');const identity=await getDriveUserEmail();const folderId=await findOrCreateDriveFolder();googleDriveReady=true;
+        const info={email:identity.email,name:identity.name,folderId};
+        if(forSignup){pendingSignupDrive=info;signupDriveStatus.textContent=`✓ Connected: ${identity.email}`;signupDriveStatus.classList.add('connected');signupConnectDriveBtn.innerHTML='<i class="fas fa-check"></i> Drive Connected';signupConnectDriveBtn.disabled=true;}
+        else if(currentUser){await db.collection('users').doc(currentUser.uid).update({driveConnected:true,driveEmail:identity.email,driveName:identity.name,driveFolderId:folderId});currentUserData=await getUserData(currentUser.uid);driveConnected=true;driveEmail=identity.email;updateDriveUI();showSettingsMessage('Google Drive connected successfully.',true);}
+        return info;
+    }catch(e){if(forSignup){signupDriveStatus.textContent=`✕ ${e.message}`;signupDriveStatus.classList.remove('connected');}else if(settingsProfileError)settingsProfileError.textContent=e.message;throw e;}
+}
+async function disconnectGoogleDrive(){
+    if(!confirm('Disconnect Google Drive? New media will require Drive to be connected again. Existing Drive files remain in your Drive.'))return;
+    try{await db.collection('users').doc(currentUser.uid).update({driveConnected:false,driveFolderId:null});googleDriveAccessToken=null;googleDriveReady=false;googleDriveFolderId=null;driveConnected=false;driveEmail='';currentUserData=await getUserData(currentUser.uid);updateDriveUI();showSettingsMessage('Google Drive disconnected.',false);}catch(e){settingsProfileError.textContent='Error: '+e.message;}
+}
+async function uploadToGoogleDrive(file,category='media'){
+    if(!currentUserData?.driveConnected)throw new Error('Google Drive must be connected before sending media.');
+    if(!googleDriveAccessToken)await getGoogleToken('');
+    const folderId=currentUserData.driveFolderId||await findOrCreateDriveFolder();
+    const safeName=`${category}_${Date.now()}_${(file.name||'file').replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+    const init=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,size',{method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':file.type||'application/octet-stream','X-Upload-Content-Length':String(file.size||0)},body:JSON.stringify({name:safeName,parents:[folderId]})});
+    const uploadUrl=init.headers.get('Location');if(!uploadUrl)throw new Error('Google Drive did not return an upload session URL.');
+    const upload=await fetch(uploadUrl,{method:'PUT',headers:{Authorization:`Bearer ${googleDriveAccessToken}`,'Content-Type':file.type||'application/octet-stream'},body:file});
+    if(!upload.ok){if(upload.status===401){googleDriveAccessToken=null;await getGoogleToken('');return uploadToGoogleDrive(file,category);}throw new Error(`Drive upload failed: ${upload.status} ${upload.statusText}`);}
+    const uploaded=await upload.json();return {...uploaded,url:await makeDriveFileReadable(uploaded.id)};
+}
+async function uploadMedia(file){const category=file.type?.startsWith('image/')?'photo':file.type?.startsWith('video/')?'video':'voice';return (await uploadToGoogleDrive(file,category)).url;}
+async function uploadProfilePhotoToDrive(file){return (await uploadToGoogleDrive(file,'profile')).url;}
+function showSettingsMessage(message,success=true){const el=success?settingsProfileSuccess:settingsProfileError;if(!el)return;el.textContent=(success?'✓ ':'✕ ')+message;if(success)setTimeout(()=>el.textContent='',3500);}
+function updateDriveUI(){
+    if(currentUserData?.driveConnected){driveName.textContent=currentUserData.driveName||'Connected';driveEmailEl.textContent=currentUserData.driveEmail||'Connected to Drive';driveStatusBadge.className='status-badge connected';driveStatusBadge.innerHTML='<i class="fas fa-circle" style="font-size:8px;"></i> Connected';connectDriveBtn.innerHTML='<i class="fas fa-unlink"></i> Disconnect';connectDriveBtn.className='connect-btn danger';connectDriveBtn.onclick=disconnectGoogleDrive;driveStorageInfo.textContent='Media destination: Google Drive';}
+    else{driveName.textContent='Not connected';driveEmailEl.textContent='Connect your Google Drive account';driveStatusBadge.className='status-badge disconnected';driveStatusBadge.innerHTML='<i class="fas fa-circle" style="font-size:8px;"></i> Required';connectDriveBtn.innerHTML='<i class="fab fa-google"></i> Connect Google Drive';connectDriveBtn.className='connect-btn primary';connectDriveBtn.onclick=()=>connectGoogleDrive();driveStorageInfo.textContent='Required for photos, videos, voice notes and profile photos';}
 }
 
 // ============================================================
@@ -2572,6 +2615,7 @@ async function sendMessage(mediaFile = null, mediaType = null) {
     const text = messageInput.value.trim();
     if (!text && !mediaFile) return;
     if (!currentChatWith || !currentUser) return;
+    if (mediaFile && !currentUserData?.driveConnected) { alert('Google Drive is required for media messages. Open Settings → Google Drive.'); return; }
 
     const chatId = getChatId(currentUser.email, currentChatWith);
     const contact = contacts.find(c => c.email === currentChatWith);
@@ -2734,8 +2778,8 @@ settingsBtn.addEventListener('click', () => {
 });
 
 settingsBackBtn.addEventListener('click', () => {
-    showPage('chatPage');
-    loadChat();
+    if(!isAdmin && (!currentUserData?.driveConnected || !currentUserData?.profileSetup)){ settingsProfileError.textContent='Complete your profile and connect Google Drive before entering ChatPro.'; return; }
+    showPage('chatPage'); loadChat();
 });
 
 async function loadSettings() {
@@ -2772,45 +2816,17 @@ async function loadSettings() {
         el.classList.toggle('selected', el.dataset.emoji === currentUserData.emoji);
     });
     
-    updateDriveUI();
-    updateStorageStats();
+    driveConnected=!!currentUserData.driveConnected; driveEmail=currentUserData.driveEmail||''; googleDriveFolderId=currentUserData.driveFolderId||null;
+    updateDriveUI(); updateStorageStats();
+    if(!currentUserData.driveConnected && !isAdmin) settingsProfileError.textContent='Google Drive is required before you can finish setup or send media.';
 }
 
 async function updateStorageStats() {
     try {
-        const chatsSnapshot = await db.collection('chats').get();
-        let photoCount = 0, videoCount = 0, voiceCount = 0;
-        let totalSize = 0;
-        
-        for (const chatDoc of chatsSnapshot.docs) {
-            const messagesSnapshot = await db.collection('chats')
-                .doc(chatDoc.id)
-                .collection('messages')
-                .where('sender', '==', currentUser.email)
-                .get();
-            
-            for (const msgDoc of messagesSnapshot.docs) {
-                const data = msgDoc.data();
-                if (data.mediaType === 'image') {
-                    photoCount++;
-                    totalSize += 2;
-                } else if (data.mediaType === 'video') {
-                    videoCount++;
-                    totalSize += 10;
-                } else if (data.mediaType === 'voice') {
-                    voiceCount++;
-                    totalSize += 1;
-                }
-            }
-        }
-        
-        storagePhotos.textContent = photoCount;
-        storageVideos.textContent = videoCount;
-        storageVoice.textContent = voiceCount;
-        storageUsed.textContent = totalSize > 1024 ? `${(totalSize/1024).toFixed(1)} GB` : `${totalSize} MB`;
-    } catch (err) {
-        console.error('Error getting storage stats:', err);
-    }
+        const chatsSnapshot=await db.collection('chats').get(); let photoCount=0,videoCount=0,voiceCount=0;
+        for(const chatDoc of chatsSnapshot.docs){const snap=await db.collection('chats').doc(chatDoc.id).collection('messages').where('sender','==',currentUser.email).get();snap.forEach(d=>{const x=d.data();if(x.mediaType==='image')photoCount++;else if(x.mediaType==='video')videoCount++;else if(x.mediaType==='voice')voiceCount++;});}
+        storagePhotos.textContent=photoCount;storageVideos.textContent=videoCount;storageVoice.textContent=voiceCount;storageUsed.textContent=currentUserData?.driveConnected?'Stored in Google Drive':'Drive not connected';
+    }catch(e){console.error('Error getting storage stats:',e);}
 }
 
 // ============================================================
@@ -2826,13 +2842,10 @@ saveProfileSettings.addEventListener('click', async () => {
         settingsProfileError.textContent = 'Please enter a display name.';
         return;
     }
+    if (!currentUserData?.driveConnected) { settingsProfileError.textContent = 'Google Drive is required before completing your profile.'; return; }
     
     try {
-        await db.collection('users').doc(currentUser.uid).update({
-            name: name,
-            about: about || 'Hey there! I\'m using ChatPro',
-            emoji: selectedEmoji
-        });
+        await db.collection('users').doc(currentUser.uid).update({name:name,about:about||'Hey there! I\'m using ChatPro',emoji:selectedEmoji,profileSetup:true});
         
         currentUserData = await getUserData(currentUser.uid);
         currentUserName.textContent = name;
@@ -2859,10 +2872,11 @@ saveProfileSettings.addEventListener('click', async () => {
 setupEmojiGrid(settingsEmojiGrid, (emoji) => {
     selectedEmoji = emoji;
     const preview = document.getElementById('profilePhotoPreview');
-    if (!currentUserData?.profilePhoto) {
-        preview.innerHTML = `<span id="profilePhotoEmoji">${emoji}</span>`;
-    }
+    if (!currentUserData?.profilePhoto) preview.innerHTML = `<span id="profilePhotoEmoji">${emoji}</span>`;
 });
+if (editProfileBtn) editProfileBtn.addEventListener('click',()=>{settingsDisplayName.focus();settingsDisplayName.scrollIntoView({behavior:'smooth',block:'center'});});
+function loadLocalSettings(){const map=[[settingReadReceipts,'chatpro_read_receipts',true],[settingTyping,'chatpro_typing',true],[settingAutoDownload,'chatpro_auto_download',true],[settingCompact,'chatpro_compact',false],[settingSounds,'chatpro_sounds',true],[settingEnterSend,'chatpro_enter_send',true]];map.forEach(([el,key,fallback])=>{if(!el)return;const v=localStorage.getItem(key);el.checked=v===null?fallback:v==='true';el.addEventListener('change',()=>localStorage.setItem(key,String(el.checked)));});}
+loadLocalSettings();
 
 // ============================================================
 // PROFILE PHOTO UPLOAD
@@ -2886,15 +2900,9 @@ profilePhotoInput.addEventListener('change', async (e) => {
             const imageUrl = event.target.result;
             profilePhotoPreview.innerHTML = `<img src="${imageUrl}" alt="Profile" />`;
             
-            // Upload to Firebase Storage
-            const storageRef = storage.ref();
-            const fileRef = storageRef.child(`profile_photos/${currentUser.uid}/photo.jpg`);
-            await fileRef.put(file);
-            const downloadUrl = await fileRef.getDownloadURL();
-            
-            await db.collection('users').doc(currentUser.uid).update({
-                profilePhoto: downloadUrl
-            });
+            if (!currentUserData?.driveConnected) throw new Error('Connect Google Drive first.');
+            const downloadUrl = await uploadProfilePhotoToDrive(file);
+            await db.collection('users').doc(currentUser.uid).update({profilePhoto: downloadUrl});
             
             currentUserData = await getUserData(currentUser.uid);
             settingsProfileSuccess.textContent = '✅ Profile photo updated successfully!';
@@ -2911,39 +2919,19 @@ profilePhotoInput.addEventListener('change', async (e) => {
 });
 
 // ============================================================
-// CLEAR MEDIA
+// ============================================================
+// CLEAR MEDIA REFERENCES
 // ============================================================
 clearMediaBtn.addEventListener('click', async () => {
-    if (!confirm('Are you sure you want to clear all media files? This cannot be undone.')) return;
-    if (!confirm('This will delete all your photos, videos, and voice notes. Continue?')) return;
-    
+    if (!confirm('Clear your media messages from ChatPro? Drive files will remain in your Google Drive.')) return;
     try {
-        const chatsSnapshot = await db.collection('chats').get();
-        let count = 0;
+        const chatsSnapshot = await db.collection('chats').get(); let count = 0;
         for (const chatDoc of chatsSnapshot.docs) {
-            const messagesSnapshot = await db.collection('chats')
-                .doc(chatDoc.id)
-                .collection('messages')
-                .where('sender', '==', currentUser.email)
-                .get();
-            
-            for (const msgDoc of messagesSnapshot.docs) {
-                const data = msgDoc.data();
-                if (data.mediaUrl) {
-                    try {
-                        const ref = storage.refFromURL(data.mediaUrl);
-                        await ref.delete();
-                    } catch (e) {}
-                    await msgDoc.ref.update({ mediaUrl: null, mediaType: null });
-                    count++;
-                }
-            }
+            const messagesSnapshot = await db.collection('chats').doc(chatDoc.id).collection('messages').where('sender','==',currentUser.email).get();
+            for (const msgDoc of messagesSnapshot.docs) if (msgDoc.data().mediaUrl) { await msgDoc.ref.update({mediaUrl:null,mediaType:null}); count++; }
         }
-        alert(`✅ Cleared ${count} media files.`);
-        updateStorageStats();
-    } catch (err) {
-        alert('Error clearing media: ' + err.message);
-    }
+        alert(`Cleared ${count} media message references. Google Drive files were not deleted.`); updateStorageStats();
+    } catch(e){ alert('Error clearing media: '+e.message); }
 });
 
 // ============================================================
@@ -3121,21 +3109,21 @@ logoutBtn.addEventListener('click', async () => {
 // AUTH STATE
 // ============================================================
 auth.onAuthStateChanged(async (user) => {
+    setTimeout(initGoogleDriveOAuth,300);
     if (user) {
         currentUser = user;
         currentUserData = await getUserData(user.uid);
         isAdmin = currentUserData?.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === user.email);
 
-        if (isAdmin || (currentUserData && currentUserData.profileSetup)) {
+        if (isAdmin) {
+            showPage('chatPage');
+            loadChat();
+        } else if (currentUserData && currentUserData.profileSetup && currentUserData.driveConnected) {
             showPage('chatPage');
             loadChat();
         } else if (currentUserData && currentUserData.nicCaptured) {
-            showPage('chatPage');
-            loadChat();
-            setTimeout(() => {
-                showPage('settingsPage');
-                loadSettings();
-            }, 500);
+            showPage('settingsPage');
+            loadSettings();
         } else {
             showPage('nicPage');
             startCamera();
