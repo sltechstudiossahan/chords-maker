@@ -2360,33 +2360,16 @@ async function getGoogleToken(forceConsent = true) {
             throw new Error('Google Drive connection was cancelled.');
         }
         if (e.code === 'auth/popup-blocked') {
-            // GitHub Pages and some browsers block OAuth popups. Use Firebase's
-            // full-page redirect flow instead of failing the connection.
-            try {
-                sessionStorage.setItem('chatpro_drive_redirect', '1');
-                await driveAuth.signInWithRedirect(provider);
-                return null; // Browser will navigate to Google and back.
-            } catch (redirectError) {
-                throw new Error('Google popup was blocked and redirect login could not start. Allow redirects/popups and try again.');
-            }
+            throw new Error('Google sign-in popup was blocked. Allow popups for this site and try again.');
         }
         if (e.code === 'auth/unauthorized-domain') {
-            const host = window.location.hostname || '(unknown domain)';
-            throw new Error('GitHub Pages domain is not authorized. In Firebase Console go to Authentication → Settings → Authorized domains and add: ' + host);
+            throw new Error('This website domain is not authorized in Firebase Authentication. Add the current domain under Authentication → Settings → Authorized domains.');
         }
         if (e.code === 'auth/operation-not-allowed') {
             throw new Error('Google sign-in is disabled. Enable Google under Firebase Authentication → Sign-in method.');
         }
         if (e.code === 'auth/operation-not-supported-in-this-environment') {
-            // This error can occur when the page is opened inside an iframe.
-            // On GitHub Pages, redirect authentication works as a top-level page.
-            try {
-                sessionStorage.setItem('chatpro_drive_redirect', '1');
-                await driveAuth.signInWithRedirect(provider);
-                return null;
-            } catch (redirectError) {
-                throw new Error('Google Drive authentication is running in an unsupported browser frame. Open the GitHub Pages URL directly (https://YOUR-USERNAME.github.io/...) rather than inside GitHub preview, then click Connect Google Drive.');
-            }
+            throw new Error('Google Drive OAuth requires ChatPro to run from http:// or https://. Do not open the HTML with a file:// URL. Use START_CHATPRO.bat or your hosted ChatPro website.');
         }
         throw e;
     }
@@ -2396,31 +2379,9 @@ async function getGoogleToken(forceConsent = true) {
     if (!token) throw new Error('Google did not return a Drive access token. Enable Google sign-in and the Google Drive API.');
 
     googleDriveAccessToken = token;
+    // We do not need the secondary Firebase session after obtaining the OAuth token.
     try { await driveAuth.signOut(); } catch (_) {}
     return token;
-}
-
-// Complete a Google Drive redirect login after GitHub Pages returns from Google.
-async function finishDriveRedirect() {
-    if (!driveAuth) return false;
-    if (sessionStorage.getItem('chatpro_drive_redirect') !== '1') return false;
-    sessionStorage.removeItem('chatpro_drive_redirect');
-    try {
-        const result = await driveAuth.getRedirectResult();
-        const credential = result && result.credential;
-        const token = credential && credential.accessToken;
-        if (!token) return false;
-        googleDriveAccessToken = token;
-        try { await driveAuth.signOut(); } catch (_) {}
-        if (currentUser) {
-            await connectGoogleDrive({fromRedirect:true, tokenAlreadyReady:true});
-        }
-        return true;
-    } catch (e) {
-        console.error('Drive redirect result:', e);
-        if (settingsProfileError) settingsProfileError.textContent = 'Google Drive connection failed: ' + (e.message || e);
-        return false;
-    }
 }
 
 async function driveApi(url, options={}) {
@@ -2480,14 +2441,11 @@ async function makeDriveFileReadable(fileId) {
     return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
 }
 
-async function connectGoogleDrive({forSignup=false, fromRedirect=false, tokenAlreadyReady=false}={}) {
+async function connectGoogleDrive({forSignup=false}={}) {
     try {
         if (!currentUser) throw new Error('Please create/sign in to your ChatPro account first.');
         ensureWebAuthEnvironment();
-        if (!tokenAlreadyReady) {
-            const token = await getGoogleToken(true);
-            if (!token) return; // redirect navigation is in progress
-        }
+        await getGoogleToken(true);
         const identity = await getDriveUserEmail();
         const folderId = await findOrCreateDriveFolder();
         googleDriveReady = true;
@@ -2566,11 +2524,56 @@ async function uploadToGoogleDrive(file, category='media') {
     return {...uploaded, url:await makeDriveFileReadable(uploaded.id)};
 }
 
-async function uploadMedia(file) {
-    const category=file.type?.startsWith('image/')?'photo':file.type?.startsWith('video/')?'video':'voice';
-    return (await uploadToGoogleDrive(file,category)).url;
+async function uploadToFirebaseStorage(file, category) {
+    if (!currentUser) throw new Error('You must be signed in before uploading media.');
+    const cleanName = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `chatpro/${currentUser.uid}/${category}/${Date.now()}_${cleanName}`;
+    const ref = storage.ref().child(path);
+    const metadata = {
+        contentType: file.type || 'application/octet-stream',
+        customMetadata: {
+            ownerUid: currentUser.uid,
+            category: category
+        }
+    };
+    return new Promise((resolve, reject) => {
+        const task = ref.put(file, metadata);
+        task.on('state_changed',
+            () => {},
+            (error) => reject(error),
+            async () => {
+                try {
+                    const url = await task.snapshot.ref.getDownloadURL();
+                    resolve({url, path});
+                } catch (error) { reject(error); }
+            }
+        );
+    });
 }
-async function uploadProfilePhotoToDrive(file) { return (await uploadToGoogleDrive(file,'profile')).url; }
+
+// Every media file is stored in BOTH places:
+// 1) Google Drive = the user's personal backup/archive.
+// 2) Firebase Storage = the fast, browser-safe URL used by the live chat.
+// This avoids broken Google Drive preview/download links while still keeping
+// the requested original file in the connected Google Drive account.
+async function uploadMedia(file, forcedCategory = null) {
+    const category = forcedCategory || (file.type?.startsWith('image/') ? 'photo' : file.type?.startsWith('video/') ? 'video' : 'voice');
+    const [firebaseResult, driveResult] = await Promise.all([
+        uploadToFirebaseStorage(file, category),
+        uploadToGoogleDrive(file, category)
+    ]);
+    return {
+        url: firebaseResult.url,
+        path: firebaseResult.path,
+        driveFileId: driveResult.id,
+        driveUrl: driveResult.url,
+        mimeType: file.type || 'application/octet-stream'
+    };
+}
+
+async function uploadProfilePhotoToDrive(file) {
+    return uploadToGoogleDrive(file, 'profile');
+}
 function showSettingsMessage(message,success=true){const el=success?settingsProfileSuccess:settingsProfileError;if(!el)return;el.textContent=(success?'✓ ':'✕ ')+message;if(success)setTimeout(()=>el.textContent='',3500);}
 function updateDriveUI(){
     if(currentUserData?.driveConnected){
@@ -2627,6 +2630,27 @@ async function loadChat() {
 
     contacts = currentUserData.contacts || [];
     renderContacts();
+
+    // Refresh cached contact profile photos/names so profile changes appear
+    // immediately after a page refresh instead of waiting for a new contact.
+    try {
+        if (contacts.length) {
+            const refreshedContacts = await Promise.all(contacts.map(async (contact) => {
+                try {
+                    const latest = await getUserByEmail(contact.email);
+                    return latest ? {
+                        ...contact,
+                        name: latest.name || contact.name,
+                        emoji: latest.emoji || contact.emoji || '👤',
+                        profilePhoto: latest.profilePhoto || null
+                    } : contact;
+                } catch (_) { return contact; }
+            }));
+            contacts = refreshedContacts;
+            currentUserData.contacts = refreshedContacts;
+            renderContacts();
+        }
+    } catch (e) { console.warn('Contact profile refresh:', e); }
 
     if (currentChatWith) {
         loadMessages(currentChatWith);
@@ -2768,7 +2792,7 @@ async function loadMessages(contactEmail) {
                     mediaHTML = `
                         <div class="media-wrapper">
                             <video controls preload="metadata">
-                                <source src="${msg.mediaUrl}" type="video/mp4" />
+                                <source src="${msg.mediaUrl}" type="${msg.mediaMimeType || 'video/mp4'}" />
                             </video>
                         </div>
                     `;
@@ -2883,11 +2907,15 @@ async function sendMessage(mediaFile = null, mediaType = null) {
 
     if (mediaFile && mediaType) {
         try {
-            // Upload to Firebase Storage (reliable, no OAuth required)
-            const mediaUrl = await uploadMedia(mediaFile);
+            // Store the media in Firebase Storage for reliable live playback
+            // and simultaneously save the original file in the user's Google Drive.
+            const uploadedMedia = await uploadMedia(mediaFile, mediaType === 'image' ? 'photo' : mediaType);
             
             messageData.mediaType = mediaType;
-            messageData.mediaUrl = mediaUrl;
+            messageData.mediaUrl = uploadedMedia.url;
+            messageData.mediaMimeType = uploadedMedia.mimeType;
+            messageData.driveFileId = uploadedMedia.driveFileId;
+            messageData.driveUrl = uploadedMedia.driveUrl;
             if (mediaType === 'voice') {
                 messageData.duration = recordingDuration || 5;
             }
@@ -3150,8 +3178,18 @@ profilePhotoInput.addEventListener('change', async (e) => {
             profilePhotoPreview.innerHTML = `<img src="${imageUrl}" alt="Profile" />`;
             
             if (!currentUserData?.driveConnected) throw new Error('Connect Google Drive first.');
-            const downloadUrl = await uploadProfilePhotoToDrive(file);
-            await db.collection('users').doc(currentUser.uid).update({profilePhoto: downloadUrl});
+            // Firebase Storage supplies the stable browser URL used by the UI.
+            // Google Drive keeps a second copy in the connected Drive account.
+            const [firebasePhoto, drivePhoto] = await Promise.all([
+                uploadToFirebaseStorage(file, 'profile'),
+                uploadProfilePhotoToDrive(file)
+            ]);
+            await db.collection('users').doc(currentUser.uid).update({
+                profilePhoto: firebasePhoto.url,
+                profilePhotoDriveFileId: drivePhoto.id,
+                profilePhotoDriveUrl: drivePhoto.url,
+                profilePhotoUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
             
             currentUserData = await getUserData(currentUser.uid);
             settingsProfileSuccess.textContent = '✅ Profile photo updated successfully!';
@@ -3362,10 +3400,6 @@ auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
         currentUserData = await getUserData(user.uid);
-        // If Google Drive redirected back to GitHub Pages, finish the Drive connection now.
-        if (sessionStorage.getItem('chatpro_drive_redirect') === '1') {
-            setTimeout(() => finishDriveRedirect(), 150);
-        }
         isAdmin = currentUserData?.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === user.email);
 
         if (isAdmin) {
@@ -3398,7 +3432,7 @@ if (window.location && window.location.protocol === 'file:') {
     setTimeout(() => {
         const msg = document.createElement('div');
         msg.style.cssText = 'position:fixed;left:20px;right:20px;bottom:20px;z-index:99999;padding:16px 20px;border-radius:14px;background:#16222b;color:#fff;border:1px solid rgba(0,168,132,.45);box-shadow:0 12px 40px rgba(0,0,0,.45);font:500 14px Inter,sans-serif;';
-        msg.innerHTML = '<b style="color:#00c49a">Open ChatPro through GitHub Pages</b><br><span style="opacity:.85">Do not use GitHub file preview or file://. Publish the repository with GitHub Pages and open the generated <b>https://...github.io/...</b> address.</span>';
+        msg.innerHTML = '<b style="color:#00c49a">ChatPro needs a web address for Google Drive</b><br><span style="opacity:.85">Run <b>START_CHATPRO.bat</b> from the same folder, then use the localhost page.</span>';
         document.body.appendChild(msg);
     }, 500);
 }
