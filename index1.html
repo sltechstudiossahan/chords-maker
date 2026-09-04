@@ -1,0 +1,3429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ChatPro - Premium Messaging</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ===== All styles from previous version ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #00a884;
+            --primary-dark: #008f72;
+            --primary-light: #00c49a;
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111b24;
+            --bg-card: #16222b;
+            --bg-hover: #1e2d38;
+            --text-primary: #ffffff;
+            --text-secondary: #b0bcc5;
+            --text-muted: #6a7a85;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            --radius: 16px;
+            --radius-sm: 12px;
+            --radius-lg: 24px;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .sinhala-text {
+            font-family: 'Noto Sans Sinhala', 'Inter', sans-serif;
+        }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        
+        .hidden { display: none !important; }
+        .page {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+        
+        /* AUTH PAGE */
+        #authPage {
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at 30% 20%, rgba(0, 168, 132, 0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(0, 168, 132, 0.05) 0%, transparent 50%),
+                        var(--bg-primary);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        #authPage::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 168, 132, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 168, 132, 0.02) 0%, transparent 50%);
+            animation: floatGlow 20s ease-in-out infinite alternate;
+        }
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(5%, 5%) rotate(3deg); }
+        }
+        
+        .auth-container {
+            background: rgba(22, 34, 43, 0.85);
+            backdrop-filter: blur(30px);
+            padding: 48px 44px;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 440px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 1;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+        .auth-header .icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            color: #fff;
+            box-shadow: 0 12px 32px rgba(0, 168, 132, 0.3);
+        }
+        .auth-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 60%, var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
+            margin-top: 4px;
+            -webkit-text-fill-color: var(--text-secondary);
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 14px;
+        }
+        .input-group .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+            z-index: 2;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            outline: none;
+        }
+        .input-group input:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 4px rgba(0, 168, 132, 0.08);
+        }
+        .input-group input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 168, 132, 0.35);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-primary .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .auth-footer {
+            margin-top: 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .auth-footer a {
+            color: var(--primary-light);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .auth-footer a:hover {
+            color: var(--primary);
+        }
+        
+        .auth-demo {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+        .auth-demo .label {
+            color: #ffd700;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+        .auth-demo .accounts {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .auth-demo .accounts span {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'Inter', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .error-msg {
+            color: #ff5e5e;
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .success-msg {
+            color: var(--primary);
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+        }
+        
+        /* NIC CAPTURE */
+        #nicPage {
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-primary);
+            padding: 20px;
+        }
+        .nic-container {
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 520px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .nic-container .nic-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+        .nic-container .nic-header i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        .nic-container h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .nic-container .sub-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1.6/1;
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        #videoPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .capture-overlay {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+        }
+        .btn-capture {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: 40px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(0, 168, 132, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-capture:hover { transform: scale(1.04); }
+        .btn-capture:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .nic-status {
+            margin-top: 16px;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* CHAT PAGE */
+        #chatPage {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--bg-primary);
+        }
+        
+        .chat-header {
+            padding: 14px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .chat-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+        .chat-header .brand i {
+            color: var(--primary);
+            font-size: 24px;
+        }
+        .chat-header .brand span {
+            background: linear-gradient(135deg, #fff, var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chat-header .user-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .chat-header .user-section .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.04);
+            padding: 6px 14px 6px 8px;
+            border-radius: 40px;
+            border: 1px solid var(--border-color);
+        }
+        .chat-header .user-section .user-badge .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+        .chat-header .user-section .user-badge .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-header .user-section .user-badge .name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .role-badge {
+            font-size: 10px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .role-badge.admin {
+            background: #ffd700;
+            color: #0a0e17;
+        }
+        .role-badge.user {
+            background: rgba(255,255,255,0.06);
+            color: var(--text-muted);
+        }
+        .btn-header {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-header:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+        }
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-logout:hover {
+            background: rgba(255, 94, 94, 0.1);
+            color: #ff5e5e;
+            border-color: rgba(255, 94, 94, 0.2);
+        }
+        
+        .admin-panel {
+            background: var(--bg-secondary);
+            padding: 10px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .admin-panel .admin-title {
+            color: #ffd700;
+            font-weight: 600;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .admin-panel button {
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .admin-panel button:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
+        .admin-panel .stats {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-left: auto;
+        }
+        
+        .chat-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .contacts-sidebar {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .contacts-sidebar .search-area {
+            padding: 16px 20px;
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .contacts-sidebar .search-area .search-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .contacts-sidebar .search-area .search-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .contacts-sidebar .search-area input {
+            width: 100%;
+            padding: 10px 14px 10px 42px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .contacts-sidebar .search-area input:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.06);
+        }
+        .contacts-sidebar .search-area input::placeholder {
+            color: var(--text-muted);
+        }
+        .btn-add-contact {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: 40px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .btn-add-contact:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 24px rgba(0, 168, 132, 0.3);
+        }
+        
+        .contacts-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 14px;
+            border-left: 3px solid transparent;
+        }
+        .contact-item:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        .contact-item.active {
+            background: rgba(0, 168, 132, 0.08);
+            border-left-color: var(--primary);
+        }
+        .contact-item .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            background: rgba(0, 168, 132, 0.1);
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+        }
+        .contact-item .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .contact-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+        .contact-item .info .name {
+            font-weight: 500;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .contact-item .info .email {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .contact-item .info .last-msg {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+        .contact-item .time {
+            font-size: 11px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+        
+        .chat-contact-header {
+            padding: 14px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+            min-height: 72px;
+        }
+        .chat-contact-header .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            background: rgba(0, 168, 132, 0.1);
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+        }
+        .chat-contact-header .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-contact-header .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-contact-header .contact-info .name {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-contact-header .contact-info .about {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+        .chat-contact-header .contact-status {
+            font-size: 12px;
+            color: var(--primary);
+            padding: 4px 14px;
+            background: rgba(0, 168, 132, 0.08);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 168, 132, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: radial-gradient(ellipse at 50% 0%, rgba(0, 168, 132, 0.02) 0%, transparent 70%);
+        }
+        
+        .msg {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+        .msg.sinhala {
+            font-family: 'Noto Sans Sinhala', 'Inter', sans-serif;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .msg.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .msg.sent .time-stamp {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .msg.received {
+            align-self: flex-start;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .msg.received .sender {
+            color: var(--text-muted);
+        }
+        .msg.received .time-stamp {
+            color: var(--text-muted);
+        }
+        
+        .msg.broadcast {
+            align-self: center;
+            background: linear-gradient(135deg, #ffd700, #f5a623);
+            color: #0a0e17;
+            max-width: 85%;
+            font-weight: 500;
+            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);
+        }
+        .msg.broadcast .sender {
+            color: rgba(0,0,0,0.6);
+            font-weight: 600;
+        }
+        .msg.broadcast .time-stamp {
+            color: rgba(0,0,0,0.4);
+        }
+        
+        .msg .sender {
+            font-size: 11px;
+            margin-bottom: 4px;
+            display: block;
+            font-weight: 500;
+        }
+        .msg .time-stamp {
+            font-size: 10px;
+            margin-top: 4px;
+            display: block;
+            text-align: right;
+            opacity: 0.7;
+        }
+        
+        .msg .media-wrapper {
+            margin: -4px -4px 4px -4px;
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 300px;
+        }
+        .msg .media-wrapper img,
+        .msg .media-wrapper video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+        .msg .media-wrapper audio {
+            width: 100%;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+        }
+        .msg .media-caption {
+            margin-top: 4px;
+        }
+        .msg .voice-note {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+        }
+        .msg .voice-note .play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .msg .voice-note .play-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .msg .voice-note .waveform {
+            flex: 1;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .msg .voice-note .waveform .bar {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            height: 100%;
+            transition: height 0.3s;
+        }
+        .msg .voice-note .duration {
+            font-size: 12px;
+            color: var(--text-muted);
+            min-width: 40px;
+        }
+        .msg.sent .voice-note .waveform .bar {
+            background: rgba(255,255,255,0.3);
+        }
+        .msg.received .voice-note .waveform .bar {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .chat-input-area {
+            padding: 14px 24px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .chat-input-area .input-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            padding: 4px 8px;
+            transition: all 0.3s;
+        }
+        .chat-input-area .input-wrapper:focus-within {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.06);
+        }
+        .chat-input-area .input-wrapper input {
+            flex: 1;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            min-width: 0;
+        }
+        .chat-input-area .input-wrapper input.sinhala-input {
+            font-family: 'Noto Sans Sinhala', 'Inter', sans-serif;
+        }
+        .chat-input-area .input-wrapper input::placeholder {
+            color: var(--text-muted);
+        }
+        .chat-input-area .input-wrapper input:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .chat-input-area .input-wrapper .media-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        .chat-input-area .input-wrapper .media-btn:hover {
+            color: var(--primary);
+            background: rgba(0, 168, 132, 0.1);
+        }
+        .chat-input-area .input-wrapper .media-btn.recording {
+            color: #ff5e5e;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .chat-input-area .input-wrapper .language-indicator {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 2px 10px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: default;
+            white-space: nowrap;
+        }
+        .chat-input-area .input-wrapper .language-indicator.sinhala {
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        .chat-input-area button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: 40px;
+            color: #fff;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .chat-input-area button:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 24px rgba(0, 168, 132, 0.3);
+        }
+        .chat-input-area button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            color: var(--text-muted);
+        }
+        .empty-chat i {
+            font-size: 48px;
+            color: rgba(0, 168, 132, 0.15);
+        }
+        .empty-chat p {
+            font-size: 15px;
+        }
+        
+        /* SETTINGS PAGE */
+        #settingsPage {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--bg-primary);
+        }
+        
+        .settings-header {
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+        .settings-header .back-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .settings-header .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        .settings-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .settings-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .settings-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .settings-section .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .settings-section .section-title i {
+            color: var(--primary);
+        }
+        
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .settings-row:last-child {
+            border-bottom: none;
+        }
+        .settings-row .label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .settings-row .value {
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .settings-row .btn-settings {
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .settings-row .btn-settings:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .settings-row .btn-settings.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            border: none;
+        }
+        .settings-row .btn-settings.primary:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 24px rgba(0, 168, 132, 0.3);
+        }
+        .settings-row .btn-settings.danger {
+            color: #ff5e5e;
+            border-color: rgba(255, 94, 94, 0.2);
+        }
+        .settings-row .btn-settings.danger:hover {
+            background: rgba(255, 94, 94, 0.1);
+            border-color: rgba(255, 94, 94, 0.3);
+        }
+        
+        .emoji-grid-settings {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            margin-top: 12px;
+        }
+        .emoji-grid-settings .emoji-option {
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            border: 2px solid transparent;
+            background: rgba(255,255,255,0.04);
+            cursor: pointer;
+            font-size: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .emoji-grid-settings .emoji-option:hover {
+            background: rgba(0, 168, 132, 0.1);
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        .emoji-grid-settings .emoji-option.selected {
+            border-color: var(--primary);
+            background: rgba(0, 168, 132, 0.15);
+        }
+        
+        .settings-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .settings-input:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.06);
+        }
+        .settings-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .profile-photo-upload {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 12px 0;
+        }
+        .profile-photo-upload .preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            border: 3px solid var(--border-color);
+            overflow: hidden;
+        }
+        .profile-photo-upload .preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-photo-upload .upload-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        .profile-photo-upload .upload-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .google-drive-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            margin-top: 8px;
+        }
+        .google-drive-status i {
+            font-size: 24px;
+        }
+        .google-drive-status .info {
+            flex: 1;
+        }
+        .google-drive-status .info .drive-name {
+            font-weight: 500;
+        }
+        .google-drive-status .info .drive-email {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .google-drive-status .connect-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        .google-drive-status .connect-btn.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+        }
+        .google-drive-status .connect-btn.primary:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 24px rgba(0, 168, 132, 0.3);
+        }
+        .google-drive-status .connect-btn.danger {
+            background: rgba(255, 94, 94, 0.15);
+            color: #ff5e5e;
+        }
+        .google-drive-status .connect-btn.danger:hover {
+            background: rgba(255, 94, 94, 0.25);
+        }
+        
+        .status-badge {
+            font-size: 12px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .status-badge.connected {
+            background: rgba(0, 168, 132, 0.15);
+            color: var(--primary);
+        }
+        .status-badge.disconnected {
+            background: rgba(255, 94, 94, 0.15);
+            color: #ff5e5e;
+        }
+        
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeIn 0.25s ease;
+        }
+        .modal-box {
+            background: var(--bg-card);
+            padding: 36px 32px;
+            border-radius: var(--radius-lg);
+            max-width: 440px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-box h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-box h3 i {
+            color: var(--primary);
+        }
+        .modal-box .modal-sub {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .modal-box input:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.06);
+        }
+        .modal-box input::placeholder {
+            color: var(--text-muted);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+        .modal-actions .btn-confirm {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+        }
+        .modal-actions .btn-confirm:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 24px rgba(0, 168, 132, 0.3);
+        }
+        .modal-actions .btn-cancel {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .modal-actions .btn-cancel:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .contacts-sidebar {
+                width: 100%;
+                border-right: none;
+            }
+            .chat-layout {
+                flex-direction: column;
+            }
+            .chat-area {
+                height: 100%;
+            }
+            .auth-container {
+                padding: 32px 24px;
+            }
+            .nic-container {
+                padding: 20px;
+            }
+            .modal-box {
+                padding: 28px 20px;
+            }
+            .settings-content {
+                padding: 16px;
+            }
+            .settings-section {
+                padding: 16px;
+            }
+            .emoji-grid-settings {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .chat-header .user-section .user-badge .name {
+                display: none;
+            }
+            .contact-item .info .email {
+                display: none;
+            }
+            .chat-input-area .input-wrapper .language-indicator {
+                display: none;
+            }
+            .msg .media-wrapper {
+                max-width: 200px;
+            }
+            .profile-photo-upload {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 24px 16px;
+            }
+            .nic-container {
+                padding: 16px;
+            }
+            .modal-box {
+                padding: 24px 16px;
+            }
+            .settings-content {
+                padding: 12px;
+            }
+            .settings-section {
+                padding: 12px;
+            }
+            .emoji-grid-settings {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            .chat-header {
+                padding: 10px 16px;
+            }
+            .chat-header .brand {
+                font-size: 17px;
+            }
+            .chat-messages {
+                padding: 16px;
+            }
+            .msg {
+                max-width: 85%;
+            }
+            .chat-input-area {
+                padding: 10px 12px;
+            }
+            .chat-input-area button {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            .msg .media-wrapper {
+                max-width: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== AUTH PAGE ===== -->
+<div id="authPage" class="page">
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="icon"><i class="fas fa-comment-dots"></i></div>
+            <h1>ChatPro</h1>
+            <p>Premium secure messaging platform</p>
+        </div>
+        
+        <div class="input-group">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="authEmail" placeholder="Email address" />
+        </div>
+        <div class="input-group">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="authPassword" placeholder="Password" />
+        </div>
+        
+        <button class="btn-primary" id="authBtn">
+            <span class="btn-content">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </span>
+        </button>
+        <div id="authError" class="error-msg"></div>
+        
+        <div class="auth-footer">
+            <span id="authSwitchText">Don't have an account?</span>
+            <a id="authSwitchLink">Create one</a>
+        </div>
+        
+        <div class="auth-demo">
+            <div class="label"><i class="fas fa-crown" style="color:#ffd700;margin-right:6px;"></i> Admin Demo</div>
+            <div class="accounts">
+                <span>admin1@chatapp.com</span>
+                <span>admin2@chatapp.com</span>
+                <span style="color:var(--text-muted);font-size:11px;">pass: admin123</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== NIC CAPTURE ===== -->
+<div id="nicPage" class="page hidden">
+    <div class="nic-container">
+        <div class="nic-header">
+            <i class="fas fa-id-card"></i>
+            <h2>Identity Verification</h2>
+        </div>
+        <p class="sub-text">Capture your National Identity Card for verification</p>
+        <div class="video-wrapper">
+            <video id="videoPreview" autoplay playsinline></video>
+            <div class="capture-overlay">
+                <button class="btn-capture" id="captureBtn"><i class="fas fa-camera"></i> Capture</button>
+                <button class="btn-secondary" id="retryCamBtn"><i class="fas fa-redo"></i> Retry</button>
+            </div>
+        </div>
+        <div class="nic-status" id="nicStatus">
+            <i class="fas fa-camera" style="color:var(--primary);"></i> Position your NIC in frame
+        </div>
+    </div>
+</div>
+
+<!-- ===== CHAT PAGE ===== -->
+<div id="chatPage" class="page hidden">
+    <div class="chat-header">
+        <div class="brand">
+            <i class="fas fa-comment-dots"></i>
+            Chat<span>Pro</span>
+        </div>
+        <div class="user-section">
+            <div class="user-badge">
+                <div class="avatar" id="headerAvatar">👤</div>
+                <span class="name" id="currentUserName">User</span>
+            </div>
+            <span class="role-badge" id="roleBadge">User</span>
+            <button class="btn-header" id="settingsBtn"><i class="fas fa-cog"></i></button>
+            <button class="btn-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div id="adminPanel" class="admin-panel hidden">
+        <span class="admin-title"><i class="fas fa-crown"></i> Admin</span>
+        <button onclick="adminBroadcast()"><i class="fas fa-bullhorn"></i> Broadcast</button>
+        <button onclick="adminViewUsers()"><i class="fas fa-users"></i> All Users</button>
+        <span class="stats" id="adminStats">Users: 0</span>
+    </div>
+    
+    <div class="chat-layout">
+        <div class="contacts-sidebar">
+            <div class="search-area">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchContact" placeholder="Search contacts..." />
+                </div>
+                <button class="btn-add-contact" id="addContactBtn"><i class="fas fa-plus"></i> Add</button>
+            </div>
+            <div class="contacts-list" id="contactsList"></div>
+        </div>
+        
+        <div class="chat-area">
+            <div id="chatContactHeader" class="chat-contact-header hidden">
+                <div class="avatar" id="contactAvatar">👤</div>
+                <div class="contact-info">
+                    <div class="name">
+                        <span id="contactNameDisplay">Contact</span>
+                        <span class="emoji-badge" id="contactEmojiDisplay"></span>
+                    </div>
+                    <div class="about" id="contactAboutDisplay">No about yet</div>
+                </div>
+                <div class="contact-status">
+                    <i class="fas fa-circle" style="font-size:8px;"></i> Online
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-chat">
+                    <i class="fas fa-comments"></i>
+                    <p>Select a contact to start chatting</p>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <button class="media-btn" id="photoBtn" title="Send Photo"><i class="fas fa-image"></i></button>
+                    <button class="media-btn" id="videoBtn" title="Send Video"><i class="fas fa-video"></i></button>
+                    <button class="media-btn" id="voiceBtn" title="Voice Message"><i class="fas fa-microphone"></i></button>
+                    <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+                    <span class="language-indicator" id="langIndicator">EN</span>
+                    <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" />
+                </div>
+                <button id="sendBtn" disabled><i class="fas fa-paper-plane"></i> Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SETTINGS PAGE ===== -->
+<div id="settingsPage" class="page hidden">
+    <div class="settings-header">
+        <button class="back-btn" id="settingsBackBtn"><i class="fas fa-arrow-left"></i></button>
+        <h2><i class="fas fa-cog" style="color:var(--primary);margin-right:10px;"></i>Settings</h2>
+    </div>
+    
+    <div class="settings-content">
+        <!-- Profile Section -->
+        <div class="settings-section">
+            <div class="section-title"><i class="fas fa-user"></i> Profile</div>
+            
+            <div class="profile-photo-upload">
+                <div class="preview" id="profilePhotoPreview">
+                    <span id="profilePhotoEmoji">😊</span>
+                </div>
+                <div>
+                    <button class="upload-btn" id="uploadPhotoBtn"><i class="fas fa-camera"></i> Upload Photo</button>
+                    <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" />
+                    <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">JPG, PNG or GIF (Max 5MB)</p>
+                </div>
+            </div>
+            
+            <div style="margin-top:12px;">
+                <label style="color:var(--text-secondary);font-size:13px;font-weight:500;">Display Name</label>
+                <input class="settings-input" id="settingsDisplayName" placeholder="Your display name" />
+            </div>
+            
+            <div style="margin-top:12px;">
+                <label style="color:var(--text-secondary);font-size:13px;font-weight:500;">About</label>
+                <input class="settings-input" id="settingsAbout" placeholder="Tell others about yourself" maxlength="60" />
+            </div>
+            
+            <div style="margin-top:12px;">
+                <label style="color:var(--text-secondary);font-size:13px;font-weight:500;">Profile Emoji</label>
+                <div class="emoji-grid-settings" id="settingsEmojiGrid">
+                    <div class="emoji-option" data-emoji="😊">😊</div>
+                    <div class="emoji-option" data-emoji="😎">😎</div>
+                    <div class="emoji-option" data-emoji="🤩">🤩</div>
+                    <div class="emoji-option" data-emoji="😍">😍</div>
+                    <div class="emoji-option" data-emoji="🧐">🧐</div>
+                    <div class="emoji-option" data-emoji="🤓">🤓</div>
+                    <div class="emoji-option" data-emoji="😇">😇</div>
+                    <div class="emoji-option" data-emoji="🥰">🥰</div>
+                    <div class="emoji-option" data-emoji="😜">😜</div>
+                    <div class="emoji-option" data-emoji="🤗">🤗</div>
+                    <div class="emoji-option" data-emoji="🥳">🥳</div>
+                    <div class="emoji-option" data-emoji="💪">💪</div>
+                    <div class="emoji-option" data-emoji="🦄">🦄</div>
+                    <div class="emoji-option" data-emoji="🌟">🌟</div>
+                    <div class="emoji-option" data-emoji="🔥">🔥</div>
+                    <div class="emoji-option" data-emoji="✨">✨</div>
+                    <div class="emoji-option" data-emoji="🎯">🎯</div>
+                    <div class="emoji-option" data-emoji="🚀">🚀</div>
+                </div>
+            </div>
+            
+            <button class="btn-primary" id="saveProfileSettings" style="margin-top:16px;">
+                <i class="fas fa-save"></i> Save Profile
+            </button>
+            <div id="settingsProfileError" class="error-msg"></div>
+            <div id="settingsProfileSuccess" class="success-msg"></div>
+        </div>
+        
+        <!-- Google Drive Section (Simulated) -->
+        <div class="settings-section">
+            <div class="section-title"><i class="fab fa-google-drive"></i> Google Drive</div>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px;">
+                Connect your Google Drive to store all media files (photos, videos, voice notes)
+            </p>
+            
+            <div id="driveStatusContainer" class="google-drive-status">
+                <i class="fab fa-google-drive" style="color:var(--text-muted);"></i>
+                <div class="info">
+                    <div class="drive-name" id="driveName">Not connected</div>
+                    <div class="drive-email" id="driveEmail">Connect your Google Drive account</div>
+                </div>
+                <button class="connect-btn primary" id="connectDriveBtn">
+                    <i class="fab fa-google"></i> Connect
+                </button>
+            </div>
+            
+            <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <span id="driveStatusBadge" class="status-badge disconnected">
+                    <i class="fas fa-circle" style="font-size:8px;"></i> Disconnected
+                </span>
+                <span style="color:var(--text-muted);font-size:12px;" id="driveStorageInfo">Storage: 0 MB used</span>
+            </div>
+        </div>
+        
+        <!-- Account Section -->
+        <div class="settings-section">
+            <div class="section-title"><i class="fas fa-shield-alt"></i> Account</div>
+            
+            <div class="settings-row">
+                <span class="label">Email</span>
+                <span class="value" id="settingsEmail">user@example.com</span>
+            </div>
+            <div class="settings-row">
+                <span class="label">Account Type</span>
+                <span class="value" id="settingsAccountType">User</span>
+            </div>
+            <div class="settings-row">
+                <span class="label">NIC Number</span>
+                <span class="value" id="settingsNicNumber">Not provided</span>
+            </div>
+            <div class="settings-row">
+                <span class="label">Member Since</span>
+                <span class="value" id="settingsMemberSince">-</span>
+            </div>
+        </div>
+        
+        <!-- Storage Section -->
+        <div class="settings-section">
+            <div class="section-title"><i class="fas fa-database"></i> Storage</div>
+            
+            <div class="settings-row">
+                <span class="label">Total Media Used</span>
+                <span class="value" id="storageUsed">0 MB</span>
+            </div>
+            <div class="settings-row">
+                <span class="label">Photos</span>
+                <span class="value" id="storagePhotos">0</span>
+            </div>
+            <div class="settings-row">
+                <span class="label">Videos</span>
+                <span class="value" id="storageVideos">0</span>
+            </div>
+            <div class="settings-row">
+                <span class="label">Voice Notes</span>
+                <span class="value" id="storageVoice">0</span>
+            </div>
+            <div class="settings-row">
+                <span class="label">Clear All Media</span>
+                <button class="btn-settings danger" id="clearMediaBtn">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="settings-section" style="border-color:rgba(255,94,94,0.2);">
+            <div class="section-title" style="color:#ff5e5e;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</div>
+            
+            <div class="settings-row">
+                <span class="label">Delete Account</span>
+                <button class="btn-settings danger" id="deleteAccountBtn">
+                    <i class="fas fa-trash-alt"></i> Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADD CONTACT MODAL ===== -->
+<div id="addContactModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3><i class="fas fa-user-plus"></i> Add Contact</h3>
+        <p class="modal-sub">Enter your friend's details to start chatting</p>
+        <input type="text" id="contactName" placeholder="Contact's full name" />
+        <input type="email" id="contactEmail" placeholder="Contact's email address" />
+        <div class="modal-actions">
+            <button class="btn-confirm" id="confirmAddContact"><i class="fas fa-check"></i> Add</button>
+            <button class="btn-cancel" id="cancelAddContact">Cancel</button>
+        </div>
+        <div id="addContactError" class="error-msg"></div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyCaMdPoVqGflbBhWhsuV4L2duqiASIbP64",
+    authDomain: "src-competion-web.firebaseapp.com",
+    projectId: "src-competion-web",
+    storageBucket: "src-competion-web.firebasestorage.app",
+    messagingSenderId: "568183938397",
+    appId: "1:568183938397:web:02d16665d7bd393d505cb4",
+    measurementId: "G-C0YQX47SR5"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Separate Firebase Auth instance used ONLY for Google Drive OAuth.
+// This keeps the ChatPro email/password account independent from the
+// Google account selected for Drive.
+const driveAuthApp = firebase.initializeApp(firebaseConfig, 'chatproDriveAuth');
+const driveAuth = driveAuthApp.auth();
+let driveAuthReadyResolve;
+const driveAuthReady = new Promise(resolve => { driveAuthReadyResolve = resolve; });
+driveAuth.onAuthStateChanged(() => driveAuthReadyResolve());
+driveAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err =>
+    console.warn('Drive auth persistence could not be enabled:', err)
+);
+
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_API = 'https://www.googleapis.com/drive/v3';
+const DRIVE_UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3/files';
+let driveAccessToken = null;
+let driveTokenExpiresAt = 0;
+
+// ============================================================
+// ADMIN ACCOUNTS
+// ============================================================
+const ADMIN_ACCOUNTS = [
+    { email: 'admin1@chatapp.com', password: 'admin123', name: 'Admin One' },
+    { email: 'admin2@chatapp.com', password: 'admin123', name: 'Admin Two' }
+];
+
+// ============================================================
+// APP STATE
+// ============================================================
+let currentUser = null;
+let currentUserData = null;
+let currentChatWith = null;
+let contacts = [];
+let allUsersCache = {};
+let unsubscribeMessages = null;
+let mediaStream = null;
+let isAdmin = false;
+let isLoginMode = true;
+let isProcessingNIC = false;
+let selectedEmoji = '😊';
+let currentLanguage = 'en';
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let recordingTimer = null;
+let recordingDuration = 0;
+let driveConnected = false;
+let driveEmail = '';
+
+// DOM refs
+const $ = id => document.getElementById(id);
+const authPage = $('authPage');
+const nicPage = $('nicPage');
+const chatPage = $('chatPage');
+const settingsPage = $('settingsPage');
+const authEmail = $('authEmail');
+const authPassword = $('authPassword');
+const authBtn = $('authBtn');
+const authError = $('authError');
+const authSwitchText = $('authSwitchText');
+const authSwitchLink = $('authSwitchLink');
+const video = $('videoPreview');
+const captureBtn = $('captureBtn');
+const retryCamBtn = $('retryCamBtn');
+const nicStatus = $('nicStatus');
+const currentUserName = $('currentUserName');
+const headerAvatar = $('headerAvatar');
+const roleBadge = $('roleBadge');
+const adminPanel = $('adminPanel');
+const adminStats = $('adminStats');
+const logoutBtn = $('logoutBtn');
+const settingsBtn = $('settingsBtn');
+const settingsBackBtn = $('settingsBackBtn');
+const contactsList = $('contactsList');
+const chatMessages = $('chatMessages');
+const messageInput = $('messageInput');
+const sendBtn = $('sendBtn');
+const searchContact = $('searchContact');
+const addContactBtn = $('addContactBtn');
+const addContactModal = $('addContactModal');
+const contactName = $('contactName');
+const contactEmail = $('contactEmail');
+const confirmAddContact = $('confirmAddContact');
+const cancelAddContact = $('cancelAddContact');
+const addContactError = $('addContactError');
+const chatContactHeader = $('chatContactHeader');
+const contactAvatar = $('contactAvatar');
+const contactNameDisplay = $('contactNameDisplay');
+const contactEmojiDisplay = $('contactEmojiDisplay');
+const contactAboutDisplay = $('contactAboutDisplay');
+const contactStatus = $('contactStatus');
+const photoBtn = $('photoBtn');
+const videoBtn = $('videoBtn');
+const voiceBtn = $('voiceBtn');
+const fileInput = $('fileInput');
+const langIndicator = $('langIndicator');
+
+// Settings DOM refs
+const settingsDisplayName = $('settingsDisplayName');
+const settingsAbout = $('settingsAbout');
+const settingsEmojiGrid = $('settingsEmojiGrid');
+const saveProfileSettings = $('saveProfileSettings');
+const settingsProfileError = $('settingsProfileError');
+const settingsProfileSuccess = $('settingsProfileSuccess');
+const settingsEmail = $('settingsEmail');
+const settingsAccountType = $('settingsAccountType');
+const settingsNicNumber = $('settingsNicNumber');
+const settingsMemberSince = $('settingsMemberSince');
+const profilePhotoPreview = $('profilePhotoPreview');
+const profilePhotoEmoji = $('profilePhotoEmoji');
+const uploadPhotoBtn = $('uploadPhotoBtn');
+const profilePhotoInput = $('profilePhotoInput');
+const connectDriveBtn = $('connectDriveBtn');
+const driveStatusBadge = $('driveStatusBadge');
+const driveStorageInfo = $('driveStorageInfo');
+const driveName = $('driveName');
+const driveEmailEl = $('driveEmail');
+const clearMediaBtn = $('clearMediaBtn');
+const deleteAccountBtn = $('deleteAccountBtn');
+const storageUsed = $('storageUsed');
+const storagePhotos = $('storagePhotos');
+const storageVideos = $('storageVideos');
+const storageVoice = $('storageVoice');
+
+// ============================================================
+// LANGUAGE DETECTION
+// ============================================================
+const SINHALA_UNICODE_RANGE = /[\u0D80-\u0DFF]/;
+const SINHALA_CHARS = ['අ','ආ','ඇ','ඈ','ඉ','ඊ','උ','ඌ','ඍ','ඎ','ඏ','ඐ','එ','ඒ','ඓ','ඔ','ඕ','ඖ','ක','ඛ','ග','ඝ','ඞ','ඟ','ච','ඡ','ජ','ඣ','ඤ','ඥ','ඦ','ට','ඨ','ඩ','ඪ','ණ','ඬ','ත','ථ','ද','ධ','න','ඳ','ප','ඵ','බ','භ','ම','ඹ','ය','ර','ල','ව','ශ','ෂ','ස','හ','ළ','ෆ','්','ා','ැ','ෑ','ි','ී','ු','ූ','ෘ','ෙ','ේ','ෛ','ො','ෝ','ෞ','ෟ'];
+
+function detectLanguage(text) {
+    if (!text || text.trim().length === 0) return 'en';
+    if (SINHALA_UNICODE_RANGE.test(text)) return 'si';
+    let sinhalaCount = 0;
+    for (let char of text) {
+        if (SINHALA_CHARS.includes(char)) sinhalaCount++;
+    }
+    if (sinhalaCount / text.length > 0.2) return 'si';
+    return 'en';
+}
+
+function updateLanguageIndicator(text) {
+    const lang = detectLanguage(text);
+    currentLanguage = lang;
+    if (lang === 'si') {
+        langIndicator.textContent = 'සිං';
+        langIndicator.className = 'language-indicator sinhala';
+        messageInput.className = 'sinhala-input';
+    } else {
+        langIndicator.textContent = 'EN';
+        langIndicator.className = 'language-indicator';
+        messageInput.className = '';
+    }
+    return lang;
+}
+
+messageInput.addEventListener('input', function() {
+    updateLanguageIndicator(this.value);
+});
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(pageId) {
+    [authPage, nicPage, chatPage, settingsPage].forEach(p => p.classList.add('hidden'));
+    $(pageId).classList.remove('hidden');
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    if (isLoginMode) {
+        authBtn.innerHTML = '<span class="btn-content"><i class="fas fa-sign-in-alt"></i> Login</span>';
+        authSwitchText.textContent = "Don't have an account?";
+        authSwitchLink.textContent = 'Create one';
+        authError.textContent = '';
+    } else {
+        authBtn.innerHTML = '<span class="btn-content"><i class="fas fa-user-plus"></i> Create Account</span>';
+        authSwitchText.textContent = "Already have an account?";
+        authSwitchLink.textContent = 'Login';
+        authError.textContent = '';
+    }
+}
+
+authSwitchLink.addEventListener('click', toggleAuthMode);
+
+authBtn.addEventListener('click', async () => {
+    const email = authEmail.value.trim().toLowerCase();
+    const password = authPassword.value;
+    authError.textContent = '';
+
+    if (!email || !password) {
+        authError.textContent = 'Please fill in all fields.';
+        return;
+    }
+    if (!isLoginMode && password.length < 6) {
+        authError.textContent = 'Password must be at least 6 characters.';
+        return;
+    }
+
+    authBtn.disabled = true;
+    authBtn.innerHTML = '<span class="btn-content"><i class="fas fa-spinner fa-spin"></i> Processing...</span>';
+
+    try {
+        let userCredential;
+
+        if (isLoginMode) {
+            try {
+                userCredential = await auth.signInWithEmailAndPassword(email, password);
+            } catch (err) {
+                // Development/demo admin accounts can be created automatically
+                // the first time they are used. Existing accounts still require
+                // the correct password.
+                const admin = ADMIN_ACCOUNTS.find(a => a.email === email);
+                if (admin && err.code === 'auth/user-not-found' && password === admin.password) {
+                    userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    await db.collection('users').doc(userCredential.user.uid).set({
+                        email, name: admin.name, emoji: '👑',
+                        about: 'ChatPro Administrator', nicNumber: '', contacts: [],
+                        isAdmin: true, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        nicCaptured: true, profileSetup: true, driveConnected: false
+                    });
+                } else {
+                    throw err;
+                }
+            }
+        } else {
+            userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            await db.collection('users').doc(userCredential.user.uid).set({
+                email: email,
+                name: email.split('@')[0],
+                emoji: '😊',
+                about: 'Hey there! I\'m using ChatPro',
+                nicNumber: '',
+                contacts: [],
+                isAdmin: ADMIN_ACCOUNTS.some(a => a.email === email),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                nicCaptured: false,
+                profileSetup: false,
+                driveConnected: false
+            });
+        }
+
+        currentUser = userCredential.user;
+        authBtn.disabled = false;
+        authBtn.innerHTML = isLoginMode ? '<span class="btn-content"><i class="fas fa-sign-in-alt"></i> Login</span>' : '<span class="btn-content"><i class="fas fa-user-plus"></i> Create Account</span>';
+    } catch (err) {
+        authError.textContent = err.message || 'Authentication failed.';
+        authBtn.disabled = false;
+        authBtn.innerHTML = isLoginMode ? '<span class="btn-content"><i class="fas fa-sign-in-alt"></i> Login</span>' : '<span class="btn-content"><i class="fas fa-user-plus"></i> Create Account</span>';
+    }
+});
+
+// ============================================================
+// EMOJI SELECTION
+// ============================================================
+function setupEmojiGrid(grid, callback) {
+    grid.addEventListener('click', (e) => {
+        const el = e.target.closest('.emoji-option');
+        if (!el) return;
+        grid.querySelectorAll('.emoji-option').forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+        callback(el.dataset.emoji);
+    });
+}
+
+// ============================================================
+// CAMERA & NIC
+// ============================================================
+async function startCamera() {
+    try {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = mediaStream;
+        await video.play();
+        nicStatus.innerHTML = '<i class="fas fa-camera" style="color:var(--primary);"></i> Position your NIC in frame and tap Capture';
+        captureBtn.disabled = false;
+    } catch (err) {
+        nicStatus.innerHTML = '❌ Camera error: ' + err.message;
+        captureBtn.disabled = true;
+    }
+}
+
+retryCamBtn.addEventListener('click', startCamera);
+
+captureBtn.addEventListener('click', async () => {
+    if (isProcessingNIC) return;
+    isProcessingNIC = true;
+    captureBtn.disabled = true;
+    nicStatus.innerHTML = '<span class="spinner"></span> Capturing...';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+    try {
+        nicStatus.innerHTML = '<span class="spinner"></span> Reading NIC details...';
+
+        const result = await Tesseract.recognize(imageDataUrl, 'eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    nicStatus.innerHTML = `<span class="spinner"></span> Reading... ${Math.round(m.progress * 100)}%`;
+                }
+            }
+        });
+
+        const text = result.data.text;
+        const nicData = parseNICDetails(text);
+
+        if (nicData.nicNumber || nicData.fullName) {
+            await db.collection('users').doc(currentUser.uid).update({
+                nicNumber: nicData.nicNumber || '',
+                name: nicData.fullName || currentUserData?.name || currentUser.email.split('@')[0],
+                nicDetails: nicData,
+                nicCaptured: true
+            });
+
+            currentUserData = await getUserData(currentUser.uid);
+            nicStatus.innerHTML = `✅ NIC captured! Found: ${nicData.fullName || 'Name'}`;
+
+            setTimeout(() => {
+                showPage('chatPage');
+                loadChat();
+                captureBtn.disabled = false;
+                isProcessingNIC = false;
+            }, 1500);
+        } else {
+            nicStatus.innerHTML = '⚠️ Could not read NIC clearly. Please try again.';
+            captureBtn.disabled = false;
+            isProcessingNIC = false;
+        }
+    } catch (err) {
+        console.error('OCR Error:', err);
+        nicStatus.innerHTML = '❌ Error reading NIC: ' + err.message + '. Please try again.';
+        captureBtn.disabled = false;
+        isProcessingNIC = false;
+    }
+});
+
+function parseNICDetails(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    let nicNumber = '';
+    let fullName = '';
+    let birthYear = '';
+    let gender = '';
+
+    const nicRegex = /(\d{9}[VvXx]|\d{12})/;
+    for (const line of lines) {
+        const match = line.match(nicRegex);
+        if (match) {
+            nicNumber = match[1].toUpperCase();
+            break;
+        }
+    }
+
+    if (nicNumber) {
+        const nicIndex = text.indexOf(nicNumber);
+        if (nicIndex !== -1) {
+            const afterNic = text.substring(nicIndex + nicNumber.length);
+            const linesAfter = afterNic.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            for (const line of linesAfter) {
+                const words = line.split(/\s+/);
+                if (words.length >= 2 && words.length <= 5 && line.length < 100) {
+                    if (!/\d/.test(line) && line.length > 5) {
+                        fullName = line;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!fullName) {
+        for (const line of lines) {
+            const words = line.split(/\s+/);
+            if (words.length >= 2 && words.length <= 5 && !/\d/.test(line) && line.length > 5 && line.length < 50) {
+                fullName = line;
+                break;
+            }
+        }
+    }
+
+    if (nicNumber.length === 10) {
+        const digits = nicNumber.substring(0, 9);
+        const day = parseInt(digits.substring(2, 5));
+        gender = day > 500 ? 'Female' : 'Male';
+        const yearPrefix = parseInt(digits.substring(0, 2));
+        birthYear = (yearPrefix >= 24 ? '19' : '20') + String(yearPrefix).padStart(2, '0');
+    }
+
+    return {
+        nicNumber: nicNumber,
+        fullName: fullName || 'User',
+        birthYear: birthYear,
+        gender: gender
+    };
+}
+
+// ============================================================
+// USER DATA
+// ============================================================
+async function getUserData(uid) {
+    try {
+        const doc = await db.collection('users').doc(uid).get();
+        return doc.exists ? { uid, ...doc.data() } : null;
+    } catch (err) {
+        console.error('Error getting user data:', err);
+        return null;
+    }
+}
+
+async function getUserByEmail(email) {
+    if (allUsersCache[email]) return allUsersCache[email];
+    try {
+        const snapshot = await db.collection('users').where('email', '==', email).get();
+        if (!snapshot.empty) {
+            const data = snapshot.docs[0].data();
+            allUsersCache[email] = { id: snapshot.docs[0].id, ...data };
+            return allUsersCache[email];
+        }
+        return null;
+    } catch (err) {
+        console.error('Error getting user by email:', err);
+        return null;
+    }
+}
+
+// ============================================================
+// GOOGLE DRIVE - REAL OAUTH + DRIVE API
+// ============================================================
+function driveProvider() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope(DRIVE_SCOPE);
+    provider.setCustomParameters({ prompt: 'select_account' });
+    return provider;
+}
+
+function getDriveCredentialAccessToken(result) {
+    const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+    return credential && credential.accessToken ? credential.accessToken : null;
+}
+
+async function getDriveAccessToken(forceRefresh = false) {
+    await driveAuthReady;
+    if (!driveAuth.currentUser) {
+        throw new Error('Google Drive is not connected. Open Settings and connect a Google Drive account first.');
+    }
+
+    if (!forceRefresh && driveAccessToken && Date.now() < driveTokenExpiresAt - 60000) {
+        return driveAccessToken;
+    }
+
+    const result = await driveAuth.currentUser.reauthenticateWithPopup(driveProvider());
+    const token = getDriveCredentialAccessToken(result);
+    if (!token) throw new Error('Google did not return a Drive access token. Please reconnect Google Drive.');
+
+    driveAccessToken = token;
+    driveTokenExpiresAt = Date.now() + (55 * 60 * 1000);
+    return token;
+}
+
+async function driveApiFetch(url, options = {}, retry = true) {
+    const token = await getDriveAccessToken(false);
+    const headers = new Headers(options.headers || {});
+    headers.set('Authorization', `Bearer ${token}`);
+
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401 && retry) {
+        driveAccessToken = null;
+        driveTokenExpiresAt = 0;
+        const freshToken = await getDriveAccessToken(true);
+        headers.set('Authorization', `Bearer ${freshToken}`);
+        return fetch(url, { ...options, headers });
+    }
+    return response;
+}
+
+async function findOrCreateDriveFolder() {
+    if (currentUserData?.driveFolderId) return currentUserData.driveFolderId;
+
+    const query = encodeURIComponent("name = 'ChatPro Media' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+    const listResponse = await driveApiFetch(`${DRIVE_API}/files?q=${query}&spaces=drive&fields=files(id,name)&pageSize=10`);
+    if (!listResponse.ok) throw new Error(`Drive folder lookup failed (${listResponse.status}).`);
+
+    const listData = await listResponse.json();
+    let folder = listData.files && listData.files[0];
+
+    if (!folder) {
+        const createResponse = await driveApiFetch(`${DRIVE_API}/files?fields=id,name`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: 'ChatPro Media',
+                mimeType: 'application/vnd.google-apps.folder'
+            })
+        });
+        if (!createResponse.ok) {
+            const text = await createResponse.text();
+            throw new Error(`Could not create ChatPro Media folder: ${text}`);
+        }
+        folder = await createResponse.json();
+    }
+
+    await db.collection('users').doc(currentUser.uid).update({ driveFolderId: folder.id });
+    currentUserData = await getUserData(currentUser.uid);
+    return folder.id;
+}
+
+async function uploadFileToDrive(file, folderId, onProgress) {
+    const metadata = {
+        name: file.name || `ChatPro_${Date.now()}`,
+        parents: [folderId],
+        mimeType: file.type || 'application/octet-stream'
+    };
+
+    // Small files can be uploaded as multipart in one request.
+    if (file.size <= 5 * 1024 * 1024) {
+        const boundary = 'chatpro_' + Math.random().toString(16).slice(2);
+        const body = new Blob([
+            `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`,
+            JSON.stringify(metadata),
+            `\r\n--${boundary}\r\nContent-Type: ${file.type || 'application/octet-stream'}\r\n\r\n`,
+            file,
+            `\r\n--${boundary}--`
+        ]);
+
+        const response = await driveApiFetch(`${DRIVE_UPLOAD_API}?uploadType=multipart&fields=id,name,webViewLink`, {
+            method: 'POST',
+            headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+            body
+        });
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`Drive upload failed (${response.status}): ${text}`);
+        }
+        if (onProgress) onProgress(100);
+        return await response.json();
+    }
+
+    // Resumable upload for larger videos/files.
+    const initResponse = await driveApiFetch(`${DRIVE_UPLOAD_API}?uploadType=resumable&fields=id,name,webViewLink`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-Upload-Content-Type': file.type || 'application/octet-stream',
+            'X-Upload-Content-Length': String(file.size)
+        },
+        body: JSON.stringify(metadata)
+    });
+    if (!initResponse.ok) {
+        const text = await initResponse.text();
+        throw new Error(`Could not start Drive upload (${initResponse.status}): ${text}`);
+    }
+
+    const sessionUrl = initResponse.headers.get('Location');
+    if (!sessionUrl) throw new Error('Google Drive did not return an upload session URL.');
+
+    // Sending the file in one PUT is supported by Drive resumable upload sessions.
+    // Progress is displayed as upload completion after the request succeeds.
+    const putResponse = await driveApiFetch(sessionUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+    });
+    if (!putResponse.ok) {
+        const text = await putResponse.text();
+        throw new Error(`Drive file upload failed (${putResponse.status}): ${text}`);
+    }
+    if (onProgress) onProgress(100);
+    return await putResponse.json();
+}
+
+async function connectGoogleDrive() {
+    if (!currentUser) return;
+
+    settingsProfileError.textContent = '';
+    settingsProfileSuccess.textContent = '';
+    connectDriveBtn.disabled = true;
+    connectDriveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+
+    try {
+        if (!/^https?:$/.test(window.location.protocol)) {
+            throw new Error('Google Drive requires this GitHub Pages site to be opened over HTTPS/HTTP, not as a local file.');
+        }
+
+        const result = await driveAuth.signInWithPopup(driveProvider());
+        const driveUser = result.user;
+        const token = getDriveCredentialAccessToken(result);
+        if (!token) throw new Error('Google did not grant Drive access. Please approve the Drive permission and try again.');
+
+        driveAccessToken = token;
+        driveTokenExpiresAt = Date.now() + (55 * 60 * 1000);
+
+        // Set the Drive user in state before folder creation.
+        const googleEmail = driveUser.email || driveUser.providerData?.[0]?.email || '';
+        const googleName = driveUser.displayName || googleEmail.split('@')[0] || 'Google Drive';
+
+        await db.collection('users').doc(currentUser.uid).update({
+            driveConnected: true,
+            driveEmail: googleEmail,
+            driveName: googleName
+        });
+
+        currentUserData = await getUserData(currentUser.uid);
+        const folderId = await findOrCreateDriveFolder();
+        await db.collection('users').doc(currentUser.uid).update({
+            driveConnected: true,
+            driveEmail: googleEmail,
+            driveName: googleName,
+            driveFolderId: folderId
+        });
+        currentUserData = await getUserData(currentUser.uid);
+        driveConnected = true;
+        driveEmail = googleEmail;
+        updateDriveUI();
+
+        settingsProfileSuccess.textContent = `✅ Google Drive connected: ${googleEmail}`;
+        settingsProfileSuccess.style.color = 'var(--primary)';
+    } catch (err) {
+        console.error('Google Drive connection error:', err);
+        settingsProfileError.textContent = 'Google Drive: ' + (err.message || 'Connection failed.');
+        // Do not mark the ChatPro account as connected unless the folder was created.
+        if (!currentUserData?.driveFolderId) {
+            try {
+                await db.collection('users').doc(currentUser.uid).update({ driveConnected: false });
+            } catch (_) {}
+            driveConnected = false;
+        }
+    } finally {
+        connectDriveBtn.disabled = false;
+        updateDriveUI();
+    }
+}
+
+async function disconnectGoogleDrive() {
+    if (!confirm('Disconnect Google Drive? Existing chat media will remain in Firebase Storage.')) return;
+
+    try {
+        await db.collection('users').doc(currentUser.uid).update({
+            driveConnected: false,
+            driveToken: firebase.firestore.FieldValue.delete(),
+            driveFolderId: firebase.firestore.FieldValue.delete(),
+            driveEmail: firebase.firestore.FieldValue.delete(),
+            driveName: firebase.firestore.FieldValue.delete()
+        });
+        try { await driveAuth.signOut(); } catch (_) {}
+        driveAccessToken = null;
+        driveTokenExpiresAt = 0;
+        driveConnected = false;
+        driveEmail = '';
+        currentUserData = await getUserData(currentUser.uid);
+        updateDriveUI();
+        settingsProfileSuccess.textContent = '✅ Google Drive disconnected.';
+        settingsProfileSuccess.style.color = 'var(--text-secondary)';
+    } catch (err) {
+        settingsProfileError.textContent = 'Error: ' + err.message;
+    }
+}
+
+async function ensureDriveConnected() {
+    await driveAuthReady;
+    currentUserData = await getUserData(currentUser.uid);
+    if (!currentUserData?.driveConnected || !currentUserData.driveFolderId || !driveAuth.currentUser) {
+        throw new Error('Connect a Google Drive account in Settings before sending media.');
+    }
+    return currentUserData.driveFolderId;
+}
+
+async function uploadMedia(file) {
+    if (!file) throw new Error('No file selected.');
+    const folderId = await ensureDriveConnected();
+
+    // Upload to Firebase Storage for reliable playback in ChatPro.
+    const safeName = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storageRef = storage.ref();
+    const fileRef = storageRef.child(`media/${currentUser.uid}/${Date.now()}_${safeName}`);
+    const uploadTask = fileRef.put(file, { contentType: file.type || 'application/octet-stream' });
+    const firebaseSnapshot = await new Promise((resolve, reject) => {
+        uploadTask.on('state_changed', null, reject, () => resolve(uploadTask.snapshot));
+    });
+    const mediaUrl = await firebaseSnapshot.ref.getDownloadURL();
+
+    // Keep an original copy in the connected Google Drive.
+    let driveFile;
+    try {
+        driveFile = await uploadFileToDrive(file, folderId);
+    } catch (driveError) {
+        // Don't send a message if the required Drive backup failed.
+        try { await firebaseSnapshot.ref.delete(); } catch (_) {}
+        throw driveError;
+    }
+
+    return {
+        mediaUrl,
+        driveFileId: driveFile.id || null,
+        driveUrl: driveFile.webViewLink || `https://drive.google.com/open?id=${driveFile.id}`
+    };
+}
+
+function updateDriveUI() {
+    if (currentUserData && currentUserData.driveConnected && currentUserData.driveFolderId) {
+        driveName.textContent = currentUserData.driveName || 'Connected';
+        driveEmailEl.textContent = currentUserData.driveEmail || 'Connected to Google Drive';
+        driveStatusBadge.className = 'status-badge connected';
+        driveStatusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:8px;"></i> Connected';
+        connectDriveBtn.textContent = 'Disconnect';
+        connectDriveBtn.className = 'connect-btn danger';
+        connectDriveBtn.onclick = disconnectGoogleDrive;
+        driveStorageInfo.textContent = 'Media backup: ChatPro Media folder';
+    } else {
+        driveName.textContent = 'Not connected';
+        driveEmailEl.textContent = 'Connect a Google Drive account';
+        driveStatusBadge.className = 'status-badge disconnected';
+        driveStatusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:8px;"></i> Disconnected';
+        connectDriveBtn.textContent = 'Connect';
+        connectDriveBtn.className = 'connect-btn primary';
+        connectDriveBtn.onclick = connectGoogleDrive;
+        driveStorageInfo.textContent = 'Required for media backup';
+    }
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+async function loadChat() {
+    if (!currentUser) return;
+
+    currentUserData = await getUserData(currentUser.uid);
+    if (!currentUserData) return;
+
+    isAdmin = currentUserData.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === currentUser.email);
+
+    const displayName = currentUserData.name || currentUser.email.split('@')[0];
+    const displayEmoji = currentUserData.emoji || '😊';
+    currentUserName.textContent = displayName;
+    
+    if (currentUserData.profilePhoto) {
+        headerAvatar.innerHTML = `<img src="${currentUserData.profilePhoto}" alt="Profile" />`;
+    } else {
+        headerAvatar.textContent = displayEmoji;
+    }
+
+    roleBadge.textContent = isAdmin ? 'Admin' : 'User';
+    roleBadge.className = `role-badge ${isAdmin ? 'admin' : 'user'}`;
+
+    if (isAdmin) {
+        adminPanel.classList.remove('hidden');
+        updateAdminStats();
+    } else {
+        adminPanel.classList.add('hidden');
+    }
+
+    contacts = currentUserData.contacts || [];
+    renderContacts();
+
+    if (currentChatWith) {
+        loadMessages(currentChatWith);
+        displayContactProfile(currentChatWith);
+    }
+}
+
+function renderContacts() {
+    const searchTerm = searchContact.value.toLowerCase().trim();
+    let filteredContacts = contacts;
+
+    if (searchTerm) {
+        filteredContacts = contacts.filter(c =>
+            c.name.toLowerCase().includes(searchTerm) ||
+            c.email.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    if (filteredContacts.length === 0) {
+        contactsList.innerHTML = `
+            <div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:14px;">
+                <i class="fas fa-users" style="font-size:32px;display:block;margin-bottom:8px;color:rgba(0,168,132,0.15);"></i>
+                ${contacts.length === 0 ? 'No contacts yet. Add one using the + button.' : 'No contacts match your search.'}
+            </div>
+        `;
+        return;
+    }
+
+    contactsList.innerHTML = filteredContacts.map(contact => `
+        <div class="contact-item ${currentChatWith === contact.email ? 'active' : ''}"
+             data-email="${contact.email}"
+             onclick="selectContact('${contact.email}')">
+            <div class="avatar">
+                ${contact.profilePhoto ? `<img src="${contact.profilePhoto}" alt="Profile" />` : (contact.emoji || '👤')}
+            </div>
+            <div class="info">
+                <div class="name">
+                    ${contact.name}
+                    ${contact.emoji ? `<span class="emoji-badge">${contact.emoji}</span>` : ''}
+                </div>
+                <div class="email">${contact.email}</div>
+                <div class="last-msg">${contact.lastMessage || 'Tap to chat'}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function displayContactProfile(email) {
+    if (!email) {
+        chatContactHeader.classList.add('hidden');
+        return;
+    }
+
+    const contact = contacts.find(c => c.email === email);
+    if (!contact) {
+        chatContactHeader.classList.add('hidden');
+        return;
+    }
+
+    try {
+        const userData = await getUserByEmail(email);
+        if (!userData) {
+            chatContactHeader.classList.add('hidden');
+            return;
+        }
+
+        chatContactHeader.classList.remove('hidden');
+        
+        if (userData.profilePhoto) {
+            contactAvatar.innerHTML = `<img src="${userData.profilePhoto}" alt="Profile" />`;
+        } else {
+            contactAvatar.textContent = userData.emoji || '👤';
+        }
+        
+        contactNameDisplay.textContent = userData.name || 'Unknown User';
+        contactEmojiDisplay.textContent = userData.emoji || '';
+        contactAboutDisplay.textContent = userData.about || 'No about yet';
+
+        contactStatus.innerHTML = '<i class="fas fa-circle" style="font-size:8px;"></i> Online';
+    } catch (err) {
+        console.error('Error displaying contact profile:', err);
+        chatContactHeader.classList.add('hidden');
+    }
+}
+
+window.selectContact = function(email) {
+    currentChatWith = email;
+    renderContacts();
+    loadMessages(email);
+    displayContactProfile(email);
+    messageInput.disabled = false;
+    sendBtn.disabled = false;
+    messageInput.focus();
+};
+
+async function loadMessages(contactEmail) {
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+    }
+
+    const chatId = getChatId(currentUser.email, contactEmail);
+    chatMessages.innerHTML = '<div class="empty-chat"><i class="fas fa-spinner fa-spin" style="font-size:32px;color:rgba(0,168,132,0.2);"></i><p>Loading messages...</p></div>';
+
+    unsubscribeMessages = db.collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                chatMessages.innerHTML = `
+                    <div class="empty-chat">
+                        <i class="fas fa-comment" style="font-size:40px;color:rgba(0,168,132,0.15);"></i>
+                        <p>No messages yet. Say hello!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let messagesHTML = '';
+            snapshot.forEach(doc => {
+                const msg = doc.data();
+                const isSent = msg.sender === currentUser.email;
+                const isBroadcast = msg.isBroadcast || false;
+                let msgClass = isSent ? 'sent' : 'received';
+                if (isBroadcast) msgClass = 'broadcast';
+                
+                const isSinhala = msg.language === 'si' || detectLanguage(msg.text) === 'si';
+                const sinhalaClass = isSinhala ? 'sinhala' : '';
+
+                let mediaHTML = '';
+                if (msg.mediaType === 'image' && msg.mediaUrl) {
+                    mediaHTML = `
+                        <div class="media-wrapper">
+                            <img src="${msg.mediaUrl}" alt="Image" loading="lazy" />
+                        </div>
+                    `;
+                } else if (msg.mediaType === 'video' && msg.mediaUrl) {
+                    mediaHTML = `
+                        <div class="media-wrapper">
+                            <video controls preload="metadata">
+                                <source src="${msg.mediaUrl}" type="${msg.mediaMimeType || 'video/mp4'}" />
+                            </video>
+                        </div>
+                    `;
+                } else if (msg.mediaType === 'voice' && msg.mediaUrl) {
+                    const duration = msg.duration || 5;
+                    const bars = Array.from({length: 20}, () => Math.random() * 60 + 20);
+                    mediaHTML = `
+                        <div class="voice-note">
+                            <button class="play-btn" onclick="playVoice('${msg.mediaUrl}', this)">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <div class="waveform">
+                                ${bars.map(h => `<div class="bar" style="height:${h}%"></div>`).join('')}
+                            </div>
+                            <span class="duration">${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, '0')}</span>
+                        </div>
+                    `;
+                }
+
+                messagesHTML += `
+                    <div class="msg ${msgClass} ${sinhalaClass}">
+                        ${!isSent && !isBroadcast ? `<span class="sender">${msg.senderName || 'Unknown'}</span>` : ''}
+                        ${isBroadcast ? `<span class="sender">📢 ADMIN</span>` : ''}
+                        ${mediaHTML}
+                        ${msg.text ? `<div class="media-caption">${msg.text}</div>` : ''}
+                        <span class="time-stamp">${msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
+                    </div>
+                `;
+            });
+
+            chatMessages.innerHTML = messagesHTML;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            if (snapshot.docs.length > 0) {
+                const lastMsg = snapshot.docs[snapshot.docs.length - 1].data();
+                const contact = contacts.find(c => c.email === contactEmail);
+                if (contact) {
+                    contact.lastMessage = lastMsg.text || (lastMsg.mediaType === 'image' ? '📷 Photo' : lastMsg.mediaType === 'video' ? '🎥 Video' : lastMsg.mediaType === 'voice' ? '🎤 Voice' : '');
+                    updateContactLastMessage(contactEmail, contact.lastMessage);
+                }
+            }
+        }, (error) => {
+            console.error('Messages listener error:', error);
+            chatMessages.innerHTML = `<div class="empty-chat"><i class="fas fa-exclamation-circle" style="font-size:32px;color:#ff5e5e;"></i><p>Error loading messages</p></div>`;
+        });
+}
+
+function getChatId(email1, email2) {
+    return [email1, email2].sort().join('_');
+}
+
+async function updateContactLastMessage(email, lastMessage) {
+    if (!currentUser) return;
+    try {
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const contacts = currentUserData?.contacts || [];
+        const updatedContacts = contacts.map(c => {
+            if (c.email === email) return { ...c, lastMessage };
+            return c;
+        });
+        await userRef.update({ contacts: updatedContacts });
+        if (currentUserData) currentUserData.contacts = updatedContacts;
+    } catch (err) {
+        console.error('Error updating last message:', err);
+    }
+}
+
+// ============================================================
+// PLAY VOICE
+// ============================================================
+window.playVoice = function(url, btn) {
+    const audio = new Audio(url);
+    const icon = btn.querySelector('i');
+    if (audio.paused) {
+        audio.play();
+        icon.className = 'fas fa-pause';
+        audio.onended = () => { icon.className = 'fas fa-play'; };
+    } else {
+        audio.pause();
+        icon.className = 'fas fa-play';
+    }
+};
+
+// ============================================================
+// SEND MESSAGE (with Firebase Storage)
+// ============================================================
+sendBtn.addEventListener('click', () => sendMessage());
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+async function sendMessage(mediaFile = null, mediaType = null) {
+    const text = messageInput.value.trim();
+    if (!text && !mediaFile) return;
+    if (!currentChatWith || !currentUser) return;
+
+    const chatId = getChatId(currentUser.email, currentChatWith);
+    const contact = contacts.find(c => c.email === currentChatWith);
+    const contactName = contact ? contact.name : currentChatWith;
+    const senderName = currentUserData?.name || currentUser.email.split('@')[0];
+    const language = detectLanguage(text);
+
+    let messageData = {
+        sender: currentUser.email,
+        senderName: senderName,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        recipient: currentChatWith,
+        recipientName: contactName,
+        language: language
+    };
+
+    if (mediaFile && mediaType) {
+        try {
+            const uploaded = await uploadMedia(mediaFile);
+            
+            messageData.mediaType = mediaType;
+            messageData.mediaUrl = uploaded.mediaUrl;
+            messageData.driveFileId = uploaded.driveFileId;
+            messageData.driveUrl = uploaded.driveUrl;
+            messageData.mediaMimeType = mediaFile.type || 'application/octet-stream';
+            if (mediaType === 'voice') {
+                messageData.duration = recordingDuration || 5;
+            }
+            if (text) {
+                messageData.text = text;
+            }
+        } catch (err) {
+            console.error('Upload error:', err);
+            alert('Failed to upload media: ' + err.message);
+            return;
+        }
+    } else if (text) {
+        messageData.text = text;
+    }
+
+    try {
+        await db.collection('chats').doc(chatId).collection('messages').add(messageData);
+        messageInput.value = '';
+        messageInput.focus();
+        langIndicator.textContent = 'EN';
+        langIndicator.className = 'language-indicator';
+        messageInput.className = '';
+    } catch (err) {
+        console.error('Send message error:', err);
+        alert('Failed to send message: ' + err.message);
+    }
+}
+
+// ============================================================
+// MEDIA HANDLING
+// ============================================================
+photoBtn.addEventListener('click', () => {
+    fileInput.accept = 'image/*';
+    fileInput.click();
+});
+
+videoBtn.addEventListener('click', () => {
+    fileInput.accept = 'video/*';
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+    
+    if (!isVideo && !isImage) {
+        alert('Please select an image or video file.');
+        return;
+    }
+
+    const statusMsg = document.createElement('div');
+    statusMsg.className = 'msg sent';
+    statusMsg.textContent = isVideo ? '🎥 Uploading video...' : '📷 Uploading image...';
+    chatMessages.appendChild(statusMsg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+        await sendMessage(file, isVideo ? 'video' : 'image');
+        statusMsg.remove();
+    } catch (err) {
+        console.error('Upload error:', err);
+        statusMsg.textContent = '❌ Failed to upload: ' + err.message;
+        statusMsg.style.background = '#ff5e5e';
+        setTimeout(() => statusMsg.remove(), 3000);
+    }
+    
+    fileInput.value = '';
+});
+
+// ============================================================
+// VOICE RECORDING
+// ============================================================
+voiceBtn.addEventListener('click', async () => {
+    if (isRecording) {
+        stopRecording();
+        return;
+    }
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        recordingDuration = 0;
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const audioFile = new File([audioBlob], `voice_${Date.now()}.mp3`, { type: 'audio/mp3' });
+            
+            try {
+                await sendMessage(audioFile, 'voice');
+            } catch (err) {
+                console.error('Voice upload error:', err);
+                alert('Failed to send voice message: ' + err.message);
+            }
+            
+            stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        voiceBtn.className = 'media-btn recording';
+        
+        recordingTimer = setInterval(() => {
+            recordingDuration++;
+        }, 1000);
+        
+    } catch (err) {
+        console.error('Voice recording error:', err);
+        alert('Please allow microphone access to record voice messages.');
+    }
+});
+
+function stopRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        voiceBtn.className = 'media-btn';
+        clearInterval(recordingTimer);
+    }
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+settingsBtn.addEventListener('click', () => {
+    showPage('settingsPage');
+    loadSettings();
+});
+
+settingsBackBtn.addEventListener('click', () => {
+    showPage('chatPage');
+    loadChat();
+});
+
+async function loadSettings() {
+    if (!currentUserData) {
+        currentUserData = await getUserData(currentUser.uid);
+    }
+    if (!currentUserData) return;
+    
+    settingsDisplayName.value = currentUserData.name || currentUser.email.split('@')[0];
+    settingsAbout.value = currentUserData.about || 'Hey there! I\'m using ChatPro';
+    settingsEmail.textContent = currentUser.email;
+    settingsAccountType.textContent = isAdmin ? 'Admin' : 'User';
+    settingsNicNumber.textContent = currentUserData.nicNumber || 'Not provided';
+    
+    if (currentUserData.createdAt) {
+        const date = currentUserData.createdAt.toDate ? 
+            currentUserData.createdAt.toDate() : 
+            new Date(currentUserData.createdAt);
+        settingsMemberSince.textContent = date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+    
+    if (currentUserData.profilePhoto) {
+        profilePhotoPreview.innerHTML = `<img src="${currentUserData.profilePhoto}" alt="Profile" />`;
+        selectedEmoji = currentUserData.emoji || '😊';
+    } else if (currentUserData.emoji) {
+        profilePhotoPreview.innerHTML = `<span id="profilePhotoEmoji">${currentUserData.emoji}</span>`;
+        selectedEmoji = currentUserData.emoji;
+    }
+    
+    document.querySelectorAll('#settingsEmojiGrid .emoji-option').forEach(el => {
+        el.classList.toggle('selected', el.dataset.emoji === currentUserData.emoji);
+    });
+    
+    updateDriveUI();
+    updateStorageStats();
+}
+
+async function updateStorageStats() {
+    try {
+        const chatsSnapshot = await db.collection('chats').get();
+        let photoCount = 0, videoCount = 0, voiceCount = 0;
+        let totalSize = 0;
+        
+        for (const chatDoc of chatsSnapshot.docs) {
+            const messagesSnapshot = await db.collection('chats')
+                .doc(chatDoc.id)
+                .collection('messages')
+                .where('sender', '==', currentUser.email)
+                .get();
+            
+            for (const msgDoc of messagesSnapshot.docs) {
+                const data = msgDoc.data();
+                if (data.mediaType === 'image') {
+                    photoCount++;
+                    totalSize += 2;
+                } else if (data.mediaType === 'video') {
+                    videoCount++;
+                    totalSize += 10;
+                } else if (data.mediaType === 'voice') {
+                    voiceCount++;
+                    totalSize += 1;
+                }
+            }
+        }
+        
+        storagePhotos.textContent = photoCount;
+        storageVideos.textContent = videoCount;
+        storageVoice.textContent = voiceCount;
+        storageUsed.textContent = totalSize > 1024 ? `${(totalSize/1024).toFixed(1)} GB` : `${totalSize} MB`;
+    } catch (err) {
+        console.error('Error getting storage stats:', err);
+    }
+}
+
+// ============================================================
+// SAVE PROFILE SETTINGS
+// ============================================================
+saveProfileSettings.addEventListener('click', async () => {
+    const name = settingsDisplayName.value.trim();
+    const about = settingsAbout.value.trim();
+    settingsProfileError.textContent = '';
+    settingsProfileSuccess.textContent = '';
+    
+    if (!name) {
+        settingsProfileError.textContent = 'Please enter a display name.';
+        return;
+    }
+    
+    try {
+        await db.collection('users').doc(currentUser.uid).update({
+            name: name,
+            about: about || 'Hey there! I\'m using ChatPro',
+            emoji: selectedEmoji,
+            profileSetup: true
+        });
+        
+        currentUserData = await getUserData(currentUser.uid);
+        currentUserName.textContent = name;
+        
+        if (currentUserData.profilePhoto) {
+            headerAvatar.innerHTML = `<img src="${currentUserData.profilePhoto}" alt="Profile" />`;
+        } else {
+            headerAvatar.textContent = selectedEmoji;
+        }
+        
+        settingsProfileSuccess.textContent = '✅ Profile saved successfully!';
+        settingsProfileSuccess.style.color = 'var(--primary)';
+        setTimeout(() => {
+            settingsProfileSuccess.textContent = '';
+        }, 3000);
+    } catch (err) {
+        settingsProfileError.textContent = 'Error: ' + err.message;
+    }
+});
+
+// ============================================================
+// SETTINGS EMOJI GRID
+// ============================================================
+setupEmojiGrid(settingsEmojiGrid, (emoji) => {
+    selectedEmoji = emoji;
+    const preview = document.getElementById('profilePhotoPreview');
+    if (!currentUserData?.profilePhoto) {
+        preview.innerHTML = `<span id="profilePhotoEmoji">${emoji}</span>`;
+    }
+});
+
+// ============================================================
+// PROFILE PHOTO UPLOAD
+// ============================================================
+uploadPhotoBtn.addEventListener('click', () => {
+    profilePhotoInput.click();
+});
+
+profilePhotoInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        settingsProfileError.textContent = 'Please select an image file.';
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        settingsProfileError.textContent = 'File is too large. Maximum size is 5MB.';
+        return;
+    }
+
+    settingsProfileError.textContent = '';
+    settingsProfileSuccess.textContent = '';
+
+    try {
+        if (!currentUserData?.driveConnected) {
+            throw new Error('Connect your Google Drive in Settings before uploading a profile photo.');
+        }
+
+        // Immediate local preview.
+        const previewUrl = URL.createObjectURL(file);
+        profilePhotoPreview.innerHTML = `<img src="${previewUrl}" alt="Profile" />`;
+
+        // Firebase Storage is the browser-readable profile image URL.
+        const storageRef = storage.ref();
+        const fileRef = storageRef.child(`profile_photos/${currentUser.uid}/profile_${Date.now()}.${(file.name.split('.').pop() || 'jpg')}`);
+        await fileRef.put(file, { contentType: file.type });
+        const downloadUrl = await fileRef.getDownloadURL();
+
+        // Original profile photo is also backed up to Drive.
+        const folderId = await ensureDriveConnected();
+        const driveFile = await uploadFileToDrive(file, folderId);
+
+        await db.collection('users').doc(currentUser.uid).update({
+            profilePhoto: downloadUrl,
+            profilePhotoDriveFileId: driveFile.id || null,
+            profilePhotoDriveUrl: driveFile.webViewLink || null,
+            profilePhotoUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        currentUserData = await getUserData(currentUser.uid);
+        headerAvatar.innerHTML = `<img src="${downloadUrl}" alt="Profile" />`;
+        settingsProfileSuccess.textContent = '✅ Profile photo saved to ChatPro and Google Drive.';
+        settingsProfileSuccess.style.color = 'var(--primary)';
+        URL.revokeObjectURL(previewUrl);
+    } catch (err) {
+        console.error('Profile photo upload error:', err);
+        settingsProfileError.textContent = 'Failed to upload profile photo: ' + (err.message || err);
+    } finally {
+        profilePhotoInput.value = '';
+    }
+});
+
+// ============================================================
+// CLEAR MEDIA
+// ============================================================
+clearMediaBtn.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to clear all media files? This cannot be undone.')) return;
+    if (!confirm('This will delete all your photos, videos, and voice notes. Continue?')) return;
+    
+    try {
+        const chatsSnapshot = await db.collection('chats').get();
+        let count = 0;
+        for (const chatDoc of chatsSnapshot.docs) {
+            const messagesSnapshot = await db.collection('chats')
+                .doc(chatDoc.id)
+                .collection('messages')
+                .where('sender', '==', currentUser.email)
+                .get();
+            
+            for (const msgDoc of messagesSnapshot.docs) {
+                const data = msgDoc.data();
+                if (data.mediaUrl) {
+                    try {
+                        const ref = storage.refFromURL(data.mediaUrl);
+                        await ref.delete();
+                    } catch (e) {}
+                    await msgDoc.ref.update({ mediaUrl: null, mediaType: null, driveFileId: null, driveUrl: null });
+                    count++;
+                }
+            }
+        }
+        alert(`✅ Cleared ${count} media files.`);
+        updateStorageStats();
+    } catch (err) {
+        alert('Error clearing media: ' + err.message);
+    }
+});
+
+// ============================================================
+// DELETE ACCOUNT
+// ============================================================
+deleteAccountBtn.addEventListener('click', async () => {
+    if (!confirm('⚠️ Are you sure you want to delete your account? This is permanent!')) return;
+    if (!confirm('All your messages, contacts, and media will be permanently deleted. Continue?')) return;
+    
+    try {
+        await db.collection('users').doc(currentUser.uid).delete();
+        await currentUser.delete();
+        alert('Account deleted successfully.');
+        await auth.signOut();
+        showPage('authPage');
+    } catch (err) {
+        alert('Error deleting account: ' + err.message);
+    }
+});
+
+// ============================================================
+// ADD CONTACT
+// ============================================================
+addContactBtn.addEventListener('click', () => {
+    addContactModal.classList.remove('hidden');
+    contactName.value = '';
+    contactEmail.value = '';
+    addContactError.textContent = '';
+});
+
+cancelAddContact.addEventListener('click', () => {
+    addContactModal.classList.add('hidden');
+});
+
+confirmAddContact.addEventListener('click', async () => {
+    const name = contactName.value.trim();
+    const email = contactEmail.value.trim().toLowerCase();
+    addContactError.textContent = '';
+
+    if (!name || !email) {
+        addContactError.textContent = 'Please fill in all fields.';
+        return;
+    }
+    if (email === currentUser.email) {
+        addContactError.textContent = 'You cannot add yourself.';
+        return;
+    }
+    if (contacts.some(c => c.email === email)) {
+        addContactError.textContent = 'Already in your contacts.';
+        return;
+    }
+
+    try {
+        const userData = await getUserByEmail(email);
+        if (!userData) {
+            addContactError.textContent = 'No user found with this email.';
+            return;
+        }
+
+        const newContact = {
+            name: name,
+            email: email,
+            emoji: userData.emoji || '👤',
+            profilePhoto: userData.profilePhoto || null,
+            lastMessage: ''
+        };
+        const updatedContacts = [...contacts, newContact];
+
+        await db.collection('users').doc(currentUser.uid).update({ contacts: updatedContacts });
+        contacts = updatedContacts;
+        if (currentUserData) currentUserData.contacts = updatedContacts;
+        renderContacts();
+        addContactModal.classList.add('hidden');
+        selectContact(email);
+    } catch (err) {
+        addContactError.textContent = 'Error: ' + err.message;
+    }
+});
+
+// ============================================================
+// SEARCH
+// ============================================================
+searchContact.addEventListener('input', renderContacts);
+
+// ============================================================
+// ADMIN
+// ============================================================
+async function updateAdminStats() {
+    try {
+        const snapshot = await db.collection('users').get();
+        adminStats.textContent = `Users: ${snapshot.size}`;
+    } catch (err) {
+        console.error('Error getting user count:', err);
+    }
+}
+
+window.adminBroadcast = async function() {
+    if (!isAdmin) return;
+    const message = prompt('Enter broadcast message:');
+    if (!message) return;
+
+    try {
+        const usersSnapshot = await db.collection('users').get();
+        const promises = [];
+        usersSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.email !== currentUser.email) {
+                const chatId = getChatId(currentUser.email, userData.email);
+                promises.push(db.collection('chats').doc(chatId).collection('messages').add({
+                    text: `📢 ${message}`,
+                    sender: currentUser.email,
+                    senderName: '📢 Admin',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    recipient: userData.email,
+                    recipientName: userData.name || userData.email,
+                    isBroadcast: true,
+                    language: detectLanguage(message)
+                }));
+            }
+        });
+        await Promise.all(promises);
+        alert(`Broadcast sent to ${promises.length} users!`);
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
+window.adminViewUsers = async function() {
+    if (!isAdmin) return;
+    try {
+        const snapshot = await db.collection('users').get();
+        let list = '📋 All Users:\n\n';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            list += `${data.emoji || '👤'} ${data.name || 'Unnamed'} (${data.email})\n`;
+            list += `  NIC: ${data.nicNumber || 'Not provided'}\n`;
+            list += `  About: ${data.about || 'N/A'}\n`;
+            list += `  Drive: ${data.driveConnected ? '✅ Connected' : '❌ Not connected'}\n\n`;
+        });
+        alert(list);
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
+// ============================================================
+// LOGOUT
+// ============================================================
+logoutBtn.addEventListener('click', async () => {
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+    }
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+    }
+    if (isRecording) {
+        stopRecording();
+    }
+    await auth.signOut();
+    currentUser = null;
+    currentUserData = null;
+    contacts = [];
+    currentChatWith = null;
+    isAdmin = false;
+    chatContactHeader.classList.add('hidden');
+    messageInput.disabled = true;
+    sendBtn.disabled = true;
+    showPage('authPage');
+    if (!isLoginMode) toggleAuthMode();
+});
+
+// ============================================================
+// AUTH STATE
+// ============================================================
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        currentUser = user;
+        currentUserData = await getUserData(user.uid);
+        isAdmin = currentUserData?.isAdmin || ADMIN_ACCOUNTS.some(a => a.email === user.email);
+
+        if (isAdmin) {
+            showPage('chatPage');
+            loadChat();
+        } else if (currentUserData && currentUserData.nicCaptured) {
+            showPage('chatPage');
+            loadChat();
+            if (!currentUserData.driveConnected || !currentUserData.profileSetup) {
+                setTimeout(() => {
+                    showPage('settingsPage');
+                    loadSettings();
+                    settingsProfileSuccess.textContent = !currentUserData.driveConnected
+                        ? '⚠️ Connect Google Drive before sending photos, videos or voice messages.'
+                        : '';
+                }, 400);
+            }
+        } else {
+            showPage('nicPage');
+            startCamera();
+        }
+    } else {
+        showPage('authPage');
+        if (!isLoginMode) toggleAuthMode();
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+        }
+        chatContactHeader.classList.add('hidden');
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+    }
+});
+
+console.log('🚀 ChatPro Premium loaded!');
+console.log('👑 Admin: admin1@chatapp.com / admin2@chatapp.com (pass: admin123)');
+console.log('📱 Features: Photos, Videos, Voice Notes, Auto Language Detection');
+console.log('💾 Media stored in Firebase Storage and backed up to the connected Google Drive');
+</script>
+</body>
+</html>
